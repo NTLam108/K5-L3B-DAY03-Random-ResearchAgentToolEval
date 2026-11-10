@@ -1,0 +1,796 @@
+{
+  "run_id": "v3_B_group_openrouter_20261110T192054234552",
+  "version": "v3",
+  "artifact_version": "v3+p9b882949c50b+tbb55ba45624e",
+  "prompt_hash": "9b882949c50bdc4018a07fd3ea7dc1b0a4782df77a116b2982436cd85efd4b9f",
+  "tools_hash": "bb55ba45624e60526893528a3ef9c2b66f0b051016ccd573592a21adedd2a7b5",
+  "phase": "B",
+  "suite": "group",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "E:\\ai_thuc_chien\\day_03_thuc_hanh\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "E:\\ai_thuc_chien\\day_03_thuc_hanh\\starter_v0\\artifacts\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day03_v2_research_group",
+  "dataset_role": "group",
+  "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
+  "generated_at": "2026-11-10T19:20:54",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 10,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G01_cite_paper_apa",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Route to new cite tool (not papers/format) when user asks for a citation of a known paper with title provided"
+      },
+      "input": "Cho mình trích dẫn APA của bài báo 'Attention Is All You Need' của Ashish Vaswani, năm 2017, link https://arxiv.org/abs/1706.03762",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cite",
+            "args": {
+              "title": "Attention Is All You Need"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "cite",
+            "args": {
+              "title": "Attention Is All You Need",
+              "authors": [
+                "Ashish Vaswani"
+              ],
+              "published": "2017",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "cite",
+          "args": {
+            "title": "Attention Is All You Need",
+            "authors": [
+              "Ashish Vaswani"
+            ],
+            "published": "2017",
+            "url": "https://arxiv.org/abs/1706.03762"
+          },
+          "result": {
+            "tool": "cite",
+            "style": "apa",
+            "citation": "Vaswani, A. (2017). Attention Is All You Need. arXiv. https://arxiv.org/abs/1706.03762"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G02_papers_arxiv_routing",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Route to papers (not lookup/social_search) when user asks for academic papers on arXiv with explicit result count"
+      },
+      "input": "Tìm giúp tôi 3 bài nghiên cứu mới nhất trên arXiv về Retrieval-Augmented Generation",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "query": "Retrieval-Augmented Generation",
+              "max_results": 3
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "query": "Retrieval-Augmented Generation",
+              "max_results": 3,
+              "sort_by": "lastUpdatedDate"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "papers",
+          "args": {
+            "query": "Retrieval-Augmented Generation",
+            "max_results": 3,
+            "sort_by": "lastUpdatedDate"
+          },
+          "result": {
+            "tool": "arxiv_search",
+            "query": "Retrieval-Augmented Generation",
+            "api_query": "all:Retrieval-Augmented AND all:Generation",
+            "total_results": 8426,
+            "items": [
+              {
+                "arxiv_id": "2611.12727v1",
+                "title": "OptiCover: A Scalable and Multi-Surface Framework for Cold-Start Visual Optimization under Semantic Constraints",
+                "summary": "Selecting an effective cover photo is a critical yet understudied problem in visual merchandising for e-commerce marketplaces. On Airbnb, hosts upload many photos depicting different rooms, amenities, and points of interest, but must manually choose a single static cover photo that is reused across heterogeneous product surfaces. This creates substantial challenges: over 90\\% of listing photos have no engagement labels, leading to a severe cold-start regime; guest preferences vary across surfaces and search intents, and visually captivating photos may be semantically misaligned with the underlying listing. At Airbnb scale, this corresponds to hundreds of millions of photos and hundreds of thousands of new uploads per day. We propose \\emph{OptiCover}, a scalable framework for cold-start visual optimization under semantic constraints and multi-surface engagement signals. The framework combines (i) a photo candidate generator that identifies candidate photos through various proxies, (ii) lightweight vision heads applied to frozen CLIP embeddings for large-scale semantic scoring, (iii) a cross-modal grounding validator based on a vision-language model (VLM) that enforces semantic representativeness, and (iv) an Exploration Logging Module (ELM) that orchestrates the collection of randomized engagement data across heterogeneous product surfaces and contextual search intents. We evaluate OptiCover through extensive offline studies and multiple online experiments across HomePage, and Search surfaces. OptiCover is now deployed in production and performs tens of millions of photo swaps daily. Online results show a 1.5\\% engagement lift on the HomePage and a 0.35\\% increase in bookers on Search, generating millions of dollars in incremental revenue. Our findings suggest that action-space shaping and semantic constraints are primary drivers of performance.",
+                "authors": [
+                  "Guillaume Guy",
+                  "Mihajlo Grbovic",
+                  "Joe Mills",
+                  "Selen Uguroglu",
+                  "Liwei He",
+                  "Pratiksha Kadam",
+                  "Nalini Kartha",
+                  "Qian Aria Li"
+                ],
+                "published": "2026-11-09T17:12:09Z",
+                "updated": "2026-11-09T17:12:09Z",
+                "url": "http://arxiv.org/abs/2611.12727v1",
+                "pdf_url": "https://arxiv.org/pdf/2611.12727v1",
+                "source": "arxiv.org",
+                "primary_category": "cs.CV",
+                "categories": [
+                  "cs.CV",
+                  "cs.LG"
+                ]
+              },
+              {
+                "arxiv_id": "2603.09541v2",
+                "title": "Memory-Efficient Active Perception for Embodied Question Answering in Dynamic Human-Populated Scenes",
+                "summary": "Embodied Question Answering (EQA) couples active visual perception, vision-language reasoning, and sequential decision making, and has traditionally been evaluated in temporally stable environments where visual evidence can be accumulated reliably. In realistic multimedia settings such as dynamic human-populated scenes, however, moving people and transient occlusions introduce human-induced perceptual variations: task-relevant multimodal cues become transient, viewpoint-dependent, and incompletely captured in individual views. Conventional store-then-retrieve strategies generate redundant visual evidence and incur high inference cost, making them ill-suited to such variations. This exposes two core problems for embodied agents: resolving viewpoint-dependent ambiguity, and maintaining compact evidence for efficient inference. To address these challenges, we present DIVRR (Dynamic-Informed View Refinement with Relevance-guided Rotation and adaptive memory selection), a training-free active evidence-acquisition framework for EQA. DIVRR combines question-conditioned room guidance with relevance-triggered view augmentation to guide exploration and additional observation. Selective memory admission uses the same relevance signal as view augmentation to retain high-scoring evidence, reducing stored entries while keeping the retrieved visual context compact. To evaluate EQA under human-induced perceptual variations, we introduce DynHuman-EQA, a dynamic human-populated EQA dataset constructed in Habitat, comprising dynamic and static subsets under shared scene layouts. Experiments on DynHuman-EQA and HM-EQA show that DIVRR outperforms existing baselines in both accuracy and memory efficiency. The gains are most pronounced in dynamic human-populated scenes.",
+                "authors": [
+                  "Xin Lu",
+                  "Rui Li",
+                  "Xun Huang",
+                  "Weixin Li",
+                  "Jiayuan Li",
+                  "Chuanqing Zhuang",
+                  "Zhengda Lu",
+                  "Jun Xiao"
+                ],
+                "published": "2026-03-10T11:51:54Z",
+                "updated": "2026-11-09T15:47:48Z",
+                "url": "http://arxiv.org/abs/2603.09541v2",
+                "pdf_url": "https://arxiv.org/pdf/2603.09541v2",
+                "source": "arxiv.org",
+                "primary_category": "cs.CV",
+                "categories": [
+                  "cs.CV",
+                  "cs.MM"
+                ]
+              },
+              {
+                "arxiv_id": "2611.12241v1",
+                "title": "SNAPRAG: Cost-Efficient Knowledge Extraction Attack on RAG Systems via Adversarial Perturbations",
+                "summary": "Retrieval-Augmented Generation (RAG) systems improve Large Language Model (LLM) responses by incorporating information from external knowledge bases. However, recent studies have shown that attackers can extract substantial portions of private knowledge bases from RAG systems through repeated querying. Yet, state-of-the-art extraction attacks either rely heavily on external LLMs to generate adversarial queries or require a large number of queries. In this paper, we propose SNAPRAG, a novel and cost-efficient attack for extracting RAG knowledge bases through adversarial perturbations. Our approach algorithmically generates adversarial queries without relying on external LLMs and allows for a strictly configurable query budget. In particular, SNAPRAG uses a discrete token-mutation algorithm to generate novel queries in a strict black-box setting. Our adaptive dissimilarity threshold calibration systematically forces queries into unexplored semantic regions of the target database, enabling extraction with fewer queries. Specifically, to extract half of the target knowledge base, our method requires up to 6.77$\\times$ fewer queries than existing approaches. Furthermore, within a fixed query budget, our method recovers up to 96.9%, outperforming the closest approach by 7.7-19.9%. We further evaluate SNAPRAG against active defenses, where it remains the leading attack on four of five defended targets, achieving 50.7-96.3% extraction rate.",
+                "authors": [
+                  "Melih Coşğun",
+                  "Mehmet Emre Gürsoy",
+                  "Alptekin Küpçü",
+                  "Sinem Sav"
+                ],
+                "published": "2026-11-09T11:30:44Z",
+                "updated": "2026-11-09T11:30:44Z",
+                "url": "http://arxiv.org/abs/2611.12241v1",
+                "pdf_url": "https://arxiv.org/pdf/2611.12241v1",
+                "source": "arxiv.org",
+                "primary_category": "cs.CR",
+                "categories": [
+                  "cs.CR"
+                ]
+              }
+            ],
+            "rate_limit_note": "arXiv may return 429 if called too frequently; this tool waits at least 3 seconds between requests in-process."
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03_clarify_missing_paper_title",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Agent must clarify when user asks for a paper citation but provides no paper title or URL"
+      },
+      "input": "Tạo trích dẫn APA cho bài báo nghiên cứu này giúp tôi",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn vui lòng cung cấp tiêu đề hoặc thông tin cụ thể về bài báo nghiên cứu mà bạn muốn tạo trích dẫn APA?",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn vui lòng cung cấp tiêu đề hoặc thông tin cụ thể về bài báo nghiên cứu mà bạn muốn tạo trích dẫn APA?",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn vui lòng cung cấp tiêu đề hoặc thông tin cụ thể về bài báo nghiên cứu mà bạn muốn tạo trích dẫn APA?",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G04_out_of_scope_translation",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Agent refuses translation request — no research tool can translate text, should not misroute to any tool"
+      },
+      "input": "Dịch đoạn văn sau sang tiếng Nhật giúp mình: Xin chào tôi là sinh viên VinUni",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Xin lỗi, nhưng tôi không thể giúp bạn với yêu cầu dịch thuật.",
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "G05_unnecessary_tool_thanks",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "what_it_tests": "Agent should respond politely without calling any tool when user is just expressing gratitude"
+      },
+      "input": "Cảm ơn bạn, thông tin rất hữu ích!",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Rất vui khi biết thông tin hữu ích với bạn! Nếu bạn cần thêm bất kỳ thông tin nào khác, hãy cho tôi biết nhé!",
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M_G01_papers_then_cite_bibtex",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Multi-turn: user provides paper info earlier and asks for BibTeX citation — agent must route to cite with style=bibtex"
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tôi vừa đọc bài báo 'Chain-of-Thought Prompting Elicits Reasoning in Large Language Models' của tác giả Jason Wei"
+        },
+        {
+          "role": "user",
+          "content": "Tạo trích dẫn BibTeX cho bài báo này giúp tôi"
+        },
+        {
+          "role": "user",
+          "content": "Dùng đúng định dạng BibTeX nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cite",
+            "args": {
+              "style": "bibtex"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "cite",
+            "args": {
+              "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+              "authors": [
+                "Jason Wei"
+              ],
+              "style": "bibtex"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "cite",
+          "args": {
+            "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+            "authors": [
+              "Jason Wei"
+            ],
+            "style": "bibtex"
+          },
+          "result": {
+            "tool": "cite",
+            "style": "bibtex",
+            "citation": "@misc{weind,\n  title = {Chain-of-Thought Prompting Elicits Reasoning in Large Language Models},\n  author = {Wei, Jason}\n}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "M_G02_send_then_cancel",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Multi-turn: user initially asks to send but then cancels twice — agent must NOT call send, must respect cancellation boundary"
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Gửi bản tóm tắt hôm nay lên Telegram giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Khoan, tôi muốn kiểm tra lại nội dung đã, đừng gửi"
+        },
+        {
+          "role": "user",
+          "content": "Chưa gửi gì hết nhé, để tôi duyệt lại"
+        }
+      ],
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Hiểu rồi! Tôi chưa gửi gì cả. Bạn có thể kiểm tra lại nội dung khi nào thì cho tôi biết nhé.",
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "M_G03_coreference_deepseek",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Multi-turn: coreference resolution — 'họ' refers to DeepSeek from earlier turns, agent must route to lookup with topic=news, timeframe=week"
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Công ty DeepSeek vừa ra mắt mô hình lý luận mới"
+        },
+        {
+          "role": "user",
+          "content": "Tìm tin tức trên web về công ty này trong tuần qua"
+        },
+        {
+          "role": "user",
+          "content": "Tìm tin tức tuần này về họ trên web nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "DeepSeek",
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "DeepSeek",
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "DeepSeek",
+            "topic": "news",
+            "timeframe": "week"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "DeepSeek",
+            "topic": "news",
+            "timeframe": "week",
+            "items": [
+              {
+                "title": "DeepSeek",
+                "url": "https://tavily.com/knowledge/company/LAfirX2dI9uN",
+                "source": "tavily.com",
+                "summary": "# DeepSeek AI\nID: LAfirX2dI9uN\nWebsite: www.deepseek.com\nLegal name: Hangzhou DeepSeek Artificial Intelligence Co., Ltd.\nHeadquarters: Hangzhou, China\nLinkedIn: www.linkedin.com/company/deepseek-ai · 196,847 followers\nIndustry: Technology, Information and Internet\nCompany type: Privately Held\nFounded: 2023\nSocial profiles: www.twitter.com/deepseek_ai, www.crunchbase.com/organization/deepseek, www.instagram.com/deepseekai_official, www.youtube.com/@deepseek-ai, github.com/deepseek-ai [...] Email: service@deepseek.com\nPhone: 20250178\nDescription: DeepSeek is a company that focuses on researching world-leading deep-end models and technologies. They provide deep-end AI solutions and deep-seek AI interactions to connect with deep-seek AI. [...] ## Products and services\nKeywords: technology/artificial intelligence, deep-end models, api, deep-seek ai, deep-end ai, deepseek, technology, artificial-intelligence, enterprise-software, it-consulting, platform, artificial intelligence (ai)",
+                "score": 0.9106172
+              },
+              {
+                "title": "DeepSeek",
+                "url": "https://tavily.com/knowledge/company/Wx7nH1Ciri18",
+                "source": "tavily.com",
+                "summary": "# DeepSeek\nID: Wx7nH1Ciri18\nWebsite: www.deepseek.com\nLegal name: Markets Able\nHeadquarters: New York, New York, United States\nLinkedIn: www.linkedin.com/company/deep-seek-ai-model · 20,653 followers\nIndustry: Technology, Information and Internet\nIndustry codes: SIC 62, 623, NAICS 52, 523\nCompany type: Privately Held\nFounded: 2016\nSocial profiles: www.crunchbase.com/organization/markets-able\nEmail: contact@marketsable.com [...] Description: MarketsAble is a research company that specializes in delivering cutting-edge reports and in-depth analysis on various industries, including blockchain, cryptocurrency, DeFi, Web3, and Bitcoin. They also cover emerging technologies like AI, IoT, Quantum Computing, and beyond. Their mission is to provide businesses, investors, and innovators with insights to stay ahead in fast-evolving markets. [...] ## Products and services\nKeywords: market research, ai, artificial intelligence, deepseek, deepseek ai, ai model, emerging technologies, cryptocurrency, research, data-driven forecasting, blockchain, analytics",
+                "score": 0.8131201
+              },
+              {
+                "title": "DeepSeek’s AI Agent Platform Reaches 1.54 Million Daily Active Users - Bloomberg",
+                "url": "https://www.bloomberg.com/news/articles/2026-11-08/deepseek-s-ai-agent-platform-hits-1-54-million-daily-users",
+                "source": "bloomberg.com",
+                "summary": "# DeepSeek’s AI Agent Platform Hits 1.54 Million Daily Users\n\nDeepSeek, the Chinese AI disruptor, released striking adoption numbers for its AI agent infrastructure as it continues to challenge Anthropic PBC and OpenAI with an entire swath of applications built around open-source AI technologies. [...] On Sunday, the Hangzhou-headquartered startup disclosed on X that DeepSeek Harness, its open-source agent application, had reached 1.54 million daily active users by November 4, less than three months after its August 13 debut. Daily users were at about 271,000 at the end of September, right after it released a desktop version of the app, based on the number of users connecting to its own servers.",
+                "score": 0.750937
+              },
+              {
+                "title": "Who Owns DeepSeek, The Chinese AI Company?",
+                "url": "https://www.bgr.com/2304275/who-owns-deepseek-ai",
+                "source": "bgr.com",
+                "summary": "Chinese AI lab DeepSeek made headlines and caused disruption in the AI industry when it launched the R1 model in 2025. It uses a concept called mixture of experts (MoE) to efficiently generate AI responses at a much cheaper cost than its competitors. This resulted in the DeepSeek app becoming very popular in a short span of time. The R1 model launch triggered a global technology stock selloff in 2025 and made a clear statement to Western AI companies: China was by no means behind in the AI [...] DeepSeek's efficiency breakthroughs in AI compute could benefit the entire AI industry, which has an opportunity to learn from them to relieve the heavy resource needs of data centers that power most AI models. DeepSeek achieved its industry-leading efficiency through a combination of its MoE architecture, hardware optimization, model distillation, and reinforcement learning, which together lowered model training costs. [...] The company was founded by an electronic engineer from Zhejiang University named Liang Wenfeng, who funded the launch of DeepSeek with profits from his hedge fund, High-Flyer, in 2023. Liang co-founded High-Flyer, which uses math and AI to make investment decisions. In DeepSeek's second funding round, the company secured about $15 billion from large backers such as Tencent Holdings and CATL. 27% of this funding is state-owned, with the China National AI Industry Investment Fund contributing",
+                "score": 0.7380092
+              },
+              {
+                "title": "DeepSeek says agent app tops 1.5M daily users, plans plugin marketplace (DEEPSEEK:Private) | Seeking Alpha",
+                "url": "https://seekingalpha.com/news/4668771-deepseek-says-agent-app-tops-15m-daily-users-plans-plugin-marketplace",
+                "source": "seekingalpha.com",
+                "summary": "## Investing Groups\n\n## Portfolios\n\n## Find & Compare\n\n# DeepSeek says agent app tops 1.5M daily users, plans plugin marketplace\n\nDeepSeek Shakes Up The Global AI Market\n\nLeon Neal/Getty Images News\n\nDeepSeek (DEEPSEEK) said its open-source AI agent application, Harness, reached 1.54 million daily active users by Nov. 4, less than three months after launching. The company’s figures, disclosed Sunday on X, compare with roughly 271,000 users at September’s end\n\n### Recommended For You",
+                "score": 0.6944897
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M_G04_switch_twitter_to_web_month",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Multi-turn: user switches from Twitter search to web news with explicit timeframe=month — agent must route to lookup (not social_search) with correct args"
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm tweet mới nhất về Gemini trên Twitter"
+        },
+        {
+          "role": "user",
+          "content": "Thôi, tìm tin tức trên web trong tháng này đi"
+        },
+        {
+          "role": "user",
+          "content": "Vẫn về Gemini"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "Gemini",
+              "topic": "news",
+              "timeframe": "month"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "Gemini",
+              "topic": "news",
+              "timeframe": "month"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "lookup",
+          "args": {
+            "query": "Gemini",
+            "topic": "news",
+            "timeframe": "month"
+          },
+          "result": {
+            "tool": "web_search",
+            "query": "Gemini",
+            "topic": "news",
+            "timeframe": "month",
+            "items": [
+              {
+                "title": "Gemini for government services: Agents for public sector | Google Cloud Blog",
+                "url": "https://cloud.google.com/blog/products/ai-machine-learning/gemini-for-government-services",
+                "source": "cloud.google.com",
+                "summary": "Document validation at intake: Gemini classifies and validates pay stubs, W-2s, utility bills, and leases when they arrive, checks the numbers for consistency, and flags missing signatures. Defects are caught before the application enters the queue, not weeks into the case.\n Plain-language notices: Gemini turns policy memos and agency guidance into public notices, aligned to the Plain Writing Act of 2010, USDA-FNS standards, and Title VI language access guidance. [...] Developed alongside agency leaders, Gemini for government services provides an integrated, fully governed environment configured for rapid deployment across federal, state, and local agencies with five core components: [...] CEO, Google Cloud\n\nEarlier this month at Gemini at Work, we introduced the Gemini agent: a single, universal agent for work. It answers your questions, handles your knowledge work, creates your images and media, and writes and runs code. You give it objectives, not instructions, and come back to finished work. It plans the work, uses skills and tools, connects to your systems, and has the security, administration, and governance your organization requires.",
+                "score": 0.5962692
+              },
+              {
+                "title": "Google sued over claims of Gemini's suicide talk with teen",
+                "url": "https://thehill.com/policy/technology/6202466-google-gemini-lawsuit-suicide-claim",
+                "source": "thehill.com",
+                "summary": "# Lawsuit claims AI on Google’s school Chromebook helped plan teen’s near-suicide\n\nParents are suing technology giant Google, alleging the AI Gemini chatbot offered on school Chromebooks helped a young teen plan her near-suicide and funeral. [...] The lawsuit, filed in California Superior Court on Wednesday, claims a 13-year-old girl, dubbed Emma, chatted with Gemini over the course of several months, prompting a “severe psychological crisis.” The complaint alleges Google’s top executives knew Gemini was dangerous and released it anyway. [...] Emma’s lawyers claim she did not seek out Gemini, but “it just showed up in Google search one day.”\n\nThe suit is the latest in hundreds of cases filed against social media and AI platforms over alleged harms to young users.\n\nEmma is bringing claims for detective design, failure to warn, negligence, fraudulent concealment and infliction of emotional concealment.",
+                "score": 0.43223172
+              },
+              {
+                "title": "Gemini 4 Argon in GitHub Copilot - GitHub Changelog",
+                "url": "https://github.blog/changelog/2026-10-13-gemini-4-argon-in-github-copilot",
+                "source": "github.blog",
+                "summary": "Gemini 4 Argon, Google’s newest frontier model, is now generally available in GitHub Copilot. It is designed for complex coding, agentic, and reasoning tasks. In early testing, Gemini 4 Argon solved more tasks than previous Gemini models on every coding benchmark, with its largest gains in Copilot CLI. It also thoroughly checks its work, testing edge cases before it finishes.",
+                "score": 0.37243727
+              },
+              {
+                "title": "Google Gemini app rolling out your ‘Memory summary’",
+                "url": "https://9to5google.com/2026/11/09/google-gemini-memory-summary",
+                "source": "9to5google.com",
+                "summary": "Officially, this feature is available for Google AI subscribers in US English with Keep Activity and Memory enabled. We’re not seeing this rolled out on Android or iOS yet, but the experience should be similar.\n\n## More on Gemini app:\n\n Google announces Gemini 4 Carbon with ‘significant gains across coding and agentic tasks’\n Latest Gemini design comes to all Android devices, app upgrades file generation\n Google adding more Connected Apps to Gemini & Search with new dev platform [...] Go to the 9to5Google home page\n\n Apps & Updates\n Gemini\n Gemini app\n\n# Google Gemini rolling out ‘Memory summary’ with everything it remembers about you\n\nAvatar for Abner Li  Abner Li | Nov 9 2026 - 8:47 am PT\n\n4 Comments\n\n \n\nGoogle Gemini now offers a “Memory summary” to “view, edit, and delete what Gemini Apps understands about you.”\n\nOn the web, you can access this new experience from Settings > Personal Intelligence (or gemini.google.com/personalization-settings). [...] To add info: “Add to my memory that I speak Japanese.”\n To remove info: “Remove my old phone number from your memory.”\n\nGoogle says “Gemini may ask follow-up questions if your request is ambiguous to ensure your summary remains accurate.”\n\nThe pencil icon in the top-right corner lets you make broader edits. In the three-dot overflow menu, you’ll find “Memory history” to see “when specific information was added or modified.”",
+                "score": 0.3615484
+              },
+              {
+                "title": "Optimizing a 200,000-line Python codebase overnight with Gemini 4 Argon - Google Developers Blog",
+                "url": "https://developers.googleblog.com/optimizing-a-200000-line-python-codebase-overnight-with-gemini-4-argon",
+                "source": "developers.googleblog.com",
+                "summary": "For the launch of Gemini 4 Argon, we wanted to test whether it could run unattended overnight on a much harder problem: finding and fixing cross-file performance bottlenecks in google/adk-python. Agent Development Kit (ADK) is Google's open-source framework for building and deploying enterprise agents.\n\nThe Python repository spans roughly 205,000 lines of code across nearly 800 source files, backed by nearly 17,000 unit tests. [...] OCT. 27, 2026 Smaller apps and faster GPU inference with LiteRT in Google Play services \n\nMobile AI How-To Guides Announcements\n\nSmaller apps and faster GPU inference with LiteRT in Google Play services\n\nOCT. 28, 2026 Turn creative prompts into interactive XR experiences with Gemini \n\nGemini Web AI Tutorials How-To Guides\n\nTurn creative prompts into interactive XR experiences with Gemini\n\nFEB. 19, 2026 How we built the Google I/O 2026 Save the Date experience [...] Gemini Google AI Studio AI Events\n\nHow we built the Google I/O 2026 Save the Date experience\n\nMARCH 3, 2026",
+                "score": 0.3303097
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "M_G05_out_scope_then_social_top",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "what_it_tests": "Multi-turn: first turn is out-of-scope, then user pivots to Twitter search with 'hot/phổ biến' — agent must use social_search with search_type=Top"
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Hướng dẫn tôi cách nấu phở bò"
+        },
+        {
+          "role": "user",
+          "content": "À quên, tìm giúp tôi các bài đăng hot nhất trên Twitter về VinFast"
+        },
+        {
+          "role": "user",
+          "content": "Cho mình xem các bài đăng phổ biến nhất nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "VinFast",
+              "search_type": "Top"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "VinFast",
+              "search_type": "Top"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "social_search",
+          "args": {
+            "query": "VinFast",
+            "search_type": "Top"
+          },
+          "result": {
+            "tool": "search_tweets",
+            "query": "VinFast",
+            "search_type": "Top",
+            "items": [
+              {
+                "title": "VinFast VF8 has the most insane creep torque I’ve ever seen https://t.co/Dyk5lWVUmH",
+                "summary": "VinFast VF8 has the most insane creep torque I’ve ever seen https://t.co/Dyk5lWVUmH",
+                "url": "https://x.com/itskyleconner/status/2017714847702462720",
+                "source": "@itskyleconner",
+                "date": "Sat Jan 31 21:41:21 +0000 2026",
+                "metrics": {
+                  "favorites": 2667,
+                  "retweets": 133,
+                  "views": "587081"
+                }
+              },
+              {
+                "title": "Xe điện vinfast bốc cháy ngay giữa đường https://t.co/NqZpIQHOwW",
+                "summary": "Xe điện vinfast bốc cháy ngay giữa đường https://t.co/NqZpIQHOwW",
+                "url": "https://x.com/Donald2742/status/2119313659218526387",
+                "source": "@Donald2742",
+                "date": "Sun Nov 08 06:18:45 +0000 2026",
+                "metrics": {
+                  "favorites": 1,
+                  "retweets": 0,
+                  "views": "75"
+                }
+              },
+              {
+                "title": "Son 10 yılda Çin dışında kurulup hayatta kalabilmiş dört elektrikli araç girişimi var. Sadece 4! ",
+                "summary": "Son 10 yılda Çin dışında kurulup hayatta kalabilmiş dört elektrikli araç girişimi var. Sadece 4! \n\nLucid, Rivian, VinFast ve Togg. \n\nBugün 120.000 satış barajını aşan Togg, Avrupa'da bir proje olsaydı tüm manşetleri süslüyor olurdu. \n\nEğriye eğri, doğruya doğru. 2023'ten beri ciddi sorunlar yaşasa da sıfırdan araç geliştirip bu kadar kısa sürede 120 bin satışa ulaşılması büyük başarı.\n\nUmarız bundan sonra ar-ge gücünü yeniden inşa eden, CATL gibi bir dünya deviyle kurduğu iş birliğinden fikrî, sınaî mülkiyet hakları ülkemize ait olan elektrikli araç sistemleri geliştirme hedefiyle istifade edebilen bir Togg görürüz.\n\nKaynak: dolubatarya",
+                "url": "https://x.com/parasizceo/status/2109687999260762447",
+                "source": "@parasizceo",
+                "date": "Mon Oct 12 16:49:49 +0000 2026",
+                "metrics": {
+                  "favorites": 782,
+                  "retweets": 149,
+                  "views": "26579"
+                }
+              },
+              {
+                "title": "Lại là VF3 nhưng ở một diễn biến khác. ",
+                "summary": "Lại là VF3 nhưng ở một diễn biến khác. \n\nĐợt này Vin ko cần chạy truyền thông, vụ chị Mai Vinfast thêm mấy vụ bé ba đang hot nữa. 😂  \nChiếc xe ko có lỗi, lỗi ở câu chuyện của người lái xe.  https://t.co/erZdGQFrut",
+                "url": "https://x.com/maygenz01/status/2117425745261945277",
+                "source": "@maygenz01",
+                "date": "Tue Nov 03 01:16:52 +0000 2026",
+                "metrics": {
+                  "favorites": 21,
+                  "retweets": 3,
+                  "views": "18880"
+                }
+              },
+              {
+                "title": "It wasn't easy for me to do all this n waited for 2.5 months for resolution from @VinFastofficial @VinFastIN @SanhChauPh",
+                "summary": "It wasn't easy for me to do all this n waited for 2.5 months for resolution from @VinFastofficial @VinFastIN @SanhChauPham #CEOIndiatappanGhosh #naneshAutomotive Hyd , after paying 25 lakhs you end up at police station for doing a video of my experience with the car before heading to consumer forum.\n#jagogirahakjago \n#vinfast",
+                "url": "https://x.com/phanikrn8/status/2083513120157577280",
+                "source": "@phanikrn8",
+                "date": "Sat Aug 01 11:20:12 +0000 2026",
+                "metrics": {
+                  "favorites": 4374,
+                  "retweets": 1123,
+                  "views": "239957"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

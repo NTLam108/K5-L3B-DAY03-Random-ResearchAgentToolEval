@@ -3,5 +3,214 @@
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_cite_paper_apa",
+      "phase": "B",
+      "suite": "group",
+      "query": "Cho mình trích dẫn APA của bài báo 'Attention Is All You Need' của Ashish Vaswani, năm 2017, link https://arxiv.org/abs/1706.03762",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cite",
+            "args": {
+              "title": "Attention Is All You Need"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Route to new cite tool (not papers/format) when user asks for a citation of a known paper with title provided"
+      }
+    },
+    {
+      "id": "G02_papers_arxiv_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tìm giúp tôi 3 bài nghiên cứu mới nhất trên arXiv về Retrieval-Augmented Generation",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "papers",
+            "args": {
+              "query": "Retrieval-Augmented Generation",
+              "max_results": 3
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Route to papers (not lookup/social_search) when user asks for academic papers on arXiv with explicit result count"
+      }
+    },
+    {
+      "id": "G03_clarify_missing_paper_title",
+      "phase": "B",
+      "suite": "group",
+      "query": "Tạo trích dẫn APA cho bài báo nghiên cứu này giúp tôi",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Agent must clarify when user asks for a paper citation but provides no paper title or URL"
+      }
+    },
+    {
+      "id": "G04_out_of_scope_translation",
+      "phase": "B",
+      "suite": "group",
+      "query": "Dịch đoạn văn sau sang tiếng Nhật giúp mình: Xin chào tôi là sinh viên VinUni",
+      "failure_type": "out_of_scope",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "metadata": {
+        "what_it_tests": "Agent refuses translation request — no research tool can translate text, should not misroute to any tool"
+      }
+    },
+    {
+      "id": "G05_unnecessary_tool_thanks",
+      "phase": "B",
+      "suite": "group",
+      "query": "Cảm ơn bạn, thông tin rất hữu ích!",
+      "failure_type": "unnecessary_tool",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "metadata": {
+        "what_it_tests": "Agent should respond politely without calling any tool when user is just expressing gratitude"
+      }
+    },
+    {
+      "id": "M_G01_papers_then_cite_bibtex",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_tool",
+      "turns": [
+        {"role": "user", "content": "Tôi vừa đọc bài báo 'Chain-of-Thought Prompting Elicits Reasoning in Large Language Models' của tác giả Jason Wei"},
+        {"role": "user", "content": "Tạo trích dẫn BibTeX cho bài báo này giúp tôi"},
+        {"role": "user", "content": "Dùng đúng định dạng BibTeX nhé"}
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "cite",
+            "args": {
+              "style": "bibtex"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Multi-turn: user provides paper info earlier and asks for BibTeX citation — agent must route to cite with style=bibtex"
+      }
+    },
+    {
+      "id": "M_G02_send_then_cancel",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_boundary",
+      "turns": [
+        {"role": "user", "content": "Gửi bản tóm tắt hôm nay lên Telegram giúp mình"},
+        {"role": "user", "content": "Khoan, tôi muốn kiểm tra lại nội dung đã, đừng gửi"},
+        {"role": "user", "content": "Chưa gửi gì hết nhé, để tôi duyệt lại"}
+      ],
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "metadata": {
+        "what_it_tests": "Multi-turn: user initially asks to send but then cancels twice — agent must NOT call send, must respect cancellation boundary"
+      }
+    },
+    {
+      "id": "M_G03_coreference_deepseek",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_tool",
+      "turns": [
+        {"role": "user", "content": "Công ty DeepSeek vừa ra mắt mô hình lý luận mới"},
+        {"role": "user", "content": "Tìm tin tức trên web về công ty này trong tuần qua"},
+        {"role": "user", "content": "Tìm tin tức tuần này về họ trên web nhé"}
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "DeepSeek",
+              "topic": "news",
+              "timeframe": "week"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Multi-turn: coreference resolution — 'họ' refers to DeepSeek from earlier turns, agent must route to lookup with topic=news, timeframe=week"
+      }
+    },
+    {
+      "id": "M_G04_switch_twitter_to_web_month",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_arg_value",
+      "turns": [
+        {"role": "user", "content": "Tìm tweet mới nhất về Gemini trên Twitter"},
+        {"role": "user", "content": "Thôi, tìm tin tức trên web trong tháng này đi"},
+        {"role": "user", "content": "Vẫn về Gemini"}
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "Gemini",
+              "topic": "news",
+              "timeframe": "month"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Multi-turn: user switches from Twitter search to web news with explicit timeframe=month — agent must route to lookup (not social_search) with correct args"
+      }
+    },
+    {
+      "id": "M_G05_out_scope_then_social_top",
+      "phase": "B",
+      "suite": "group",
+      "failure_type": "wrong_arg_value",
+      "turns": [
+        {"role": "user", "content": "Hướng dẫn tôi cách nấu phở bò"},
+        {"role": "user", "content": "À quên, tìm giúp tôi các bài đăng hot nhất trên Twitter về VinFast"},
+        {"role": "user", "content": "Cho mình xem các bài đăng phổ biến nhất nhé"}
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "social_search",
+            "args": {
+              "query": "VinFast",
+              "search_type": "Top"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "what_it_tests": "Multi-turn: first turn is out-of-scope, then user pivots to Twitter search with 'hot/phổ biến' — agent must use social_search with search_type=Top"
+      }
+    }
+  ]
 }
