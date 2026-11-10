@@ -320,6 +320,36 @@ def test_calc_rejects_unsafe_code_execution() -> None:
     assert "error" in result
 
 
+def test_calc_rejects_huge_power_instead_of_hanging() -> None:
+    # Regression: these used to run for minutes / eat memory (found while reviewing the bonus tools).
+    for expression in ("10**10**10", "9**9**9**9", "pow(9, 99999999)", "(10**4000)**(10**4000)"):
+        result = calc_tool(expression=expression)
+        assert result["tool"] == "calc"
+        assert result["error"] == "ValueError", expression
+        assert "too large" in result["message"]
+
+
+def test_calc_still_allows_reasonable_powers() -> None:
+    assert calc_tool(expression="2**100")["result"] == 2**100
+    assert calc_tool(expression="pow(2, 10)")["result"] == 1024
+    assert calc_tool(expression="pow(3, 200, 7)")["result"] == pow(3, 200, 7)
+    assert calc_tool(expression="2**-3")["result"] == 0.12
+    assert calc_tool(expression="10**3000")["tool"] == "calc" and "result" in calc_tool(expression="10**3000")
+
+
+def test_calc_rejects_list_arithmetic_but_accepts_lists_as_arguments() -> None:
+    assert calc_tool(expression="[0] * 10**9")["error"] == "ValueError"
+    assert calc_tool(expression="[1, 2] + [3]")["error"] == "ValueError"
+    assert calc_tool(expression="sum([1, 2, 3.5])")["result"] == 6.5
+    assert calc_tool(expression="max([4, 9, 2])")["result"] == 9
+
+
+def test_calc_rejects_overlong_expression() -> None:
+    result = calc_tool(expression="1+" * 400 + "1")
+    assert result["error"] == "ValueError"
+    assert "longer than" in result["message"]
+
+
 # ---------------- text_stats ----------------
 
 text_stats_tool = TOOL_FUNCTIONS.get("text_stats")

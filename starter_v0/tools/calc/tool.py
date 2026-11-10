@@ -1,10 +1,27 @@
 from __future__ import annotations
 
 import ast
+import math
 import operator
 from typing import Any
 
 from tools._shared import err
+
+# Resource limits: the model (or a user prompting it) controls the expression, so keep it cheap to evaluate.
+MAX_EXPRESSION_CHARS = 500
+MAX_RESULT_BITS = 10_000  # about 3,000 decimal digits; also stays under Python's 4,300-digit str() limit
+
+
+def _safe_pow(base: Any, exponent: Any, modulus: Any = None) -> Any:
+    """Power with a cap on the estimated size of the result (a**b with huge b would hang the server)."""
+    if modulus is not None:
+        return pow(base, exponent, modulus)
+    if isinstance(base, (list, tuple)) or isinstance(exponent, (list, tuple)):
+        raise ValueError("Power is only defined for numbers")
+    if exponent > 0 and abs(base) > 1 and exponent * math.log2(abs(base)) > MAX_RESULT_BITS:
+        raise ValueError("Result is too large to compute (exponent too big)")
+    return operator.pow(base, exponent)
+
 
 # Safe operators
 OPERATORS = {
@@ -14,7 +31,7 @@ OPERATORS = {
     ast.Div: operator.truediv,
     ast.FloorDiv: operator.floordiv,
     ast.Mod: operator.mod,
-    ast.Pow: operator.pow,
+    ast.Pow: _safe_pow,
     ast.USub: operator.neg,
     ast.UAdd: operator.pos,
 }
@@ -25,7 +42,7 @@ ALLOWED_FUNCTIONS = {
     "abs": abs,
     "min": min,
     "max": max,
-    "pow": pow,
+    "pow": _safe_pow,
     "sum": sum,
 }
 
@@ -41,6 +58,9 @@ def _eval_node(node: ast.AST) -> Any:
             raise ValueError(f"Unsupported binary operator: {op_type.__name__}")
         left = _eval_node(node.left)
         right = _eval_node(node.right)
+        if isinstance(left, (list, tuple)) or isinstance(right, (list, tuple)):
+            # [0] * 10**9 would try to allocate gigabytes; lists are only allowed as function arguments.
+            raise ValueError("Arithmetic on lists is not supported; pass lists to sum/min/max instead")
         return OPERATORS[op_type](left, right)
     elif isinstance(node, ast.UnaryOp):
         op_type = type(node.op)
@@ -70,6 +90,12 @@ def evaluate_math(expression: str = "", precision: int = 2) -> dict[str, Any]:
             "tool": "calc",
             "error": "ValueError",
             "message": "expression must be a non-empty string",
+        }
+    if len(expression.strip()) > MAX_EXPRESSION_CHARS:
+        return {
+            "tool": "calc",
+            "error": "ValueError",
+            "message": f"expression is longer than {MAX_EXPRESSION_CHARS} characters",
         }
     try:
         parsed = ast.parse(expression.strip(), mode="eval")
