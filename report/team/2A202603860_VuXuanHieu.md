@@ -4,7 +4,7 @@
 
 - Họ tên: Vũ Xuân Hiếu
 - MSSV: 2A202603860
-- Email: vuhieu3205@gmail.com
+- Email: 26ai.hieuvx2@vinuni.edu.vn
 - GitHub: vuhieuvh
 
 ## 2. Phần việc phụ trách
