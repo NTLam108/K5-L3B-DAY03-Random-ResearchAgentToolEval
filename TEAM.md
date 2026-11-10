@@ -14,7 +14,7 @@
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
 |   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 |  | NTLam108 | Setup, baseline v0 + phân tích lỗi, vòng v1 |
-|   2 | Trần Gia Bảo | 2A202603914 |  |  | Tool mới (`tool.py`, `TOOL.md`, đăng ký) + unit test |
+|   2 | Trần Gia Bảo | 2A202603914 | 26ai.baotg@vinuni.edu.vn |  | Tool mới (`tool.py`, `TOOL.md`, đăng ký) + unit test |
 |   3 | Vũ Xuân Hiếu | 2A202603860 | 26ai.hieuvx2@vinuni.edu.vn | vuhieuvh | 10 case eval nhóm, vòng v2/v3 |
 |   4 | Trịnh Hưng Thịnh | 2A202603907 |26ai.thinhth@vinuni.edu.vn  |TrnhThnh  | UI, chat live + transcript, báo cáo nhóm |
 
@@ -46,15 +46,19 @@ Ví dụ: `report/team/20241234_NguyenVanAn.md`.
 
 ### Phần việc phụ trách
 
-- Tool mới: `tools/<tên>/tool.py`, `TOOL.md`, đăng ký trong `tools/__init__.py` và `tools.yaml`; ≥ 3 unit test.
+- Tool mới `cite`: `tools/cite/tool.py`, `TOOL.md`, đăng ký trong `tools/__init__.py` và `tools.yaml`; unit test; bonus test challenge.
 
 ### Đóng góp cụ thể
 
--
+- Viết tool `cite` (trích dẫn APA/BibTeX từ metadata bài báo, chạy local) cùng 13 unit test; chỉnh mô tả trong `tools.yaml` sau khi thử với model thật.
+- Điền 14 test cho các tool có sẵn, đưa `pytest` về 111 passed, 0 skipped (bonus test challenge).
+- Điền hàng `cite` ở A2, hàng "Tool mới" và "Unit test" ở B5a, hàng Test challenge ở B5 trong `report/team/group_report.md`.
+- Code và test được viết với sự hỗ trợ của trợ lý AI; chi tiết và cách tự kiểm tra ở báo cáo cá nhân.
 
 ### Bằng chứng
 
--
+- File: `starter_v0/tools/cite/`, `starter_v0/tests/test_tools_todo.py`; báo cáo cá nhân `report/team/2A202603914_TranGiaBao.md` (danh sách commit trong mục 4).
+- Kết quả: `pytest` 111 passed, 0 skipped, 0 failed.
 
 ## Vũ Xuân Hiếu - 2A202603860
 
