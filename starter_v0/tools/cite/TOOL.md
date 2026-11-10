@@ -34,9 +34,11 @@ Runs locally: no API key, no network.
 
 ## Status of two points (NOT independently verified)
 
-- Team member reported that the official APA 7 preprint examples do not require `arXiv:ID`
-  or a `[Preprint]` label. The tool does not output either. Not confirmed by us because
-  apastyle.apa.org was not reachable; other (non-official) sources disagree about `[Preprint]`.
+- The team obtained, via ChatGPT, the claim that the official APA 7 preprint examples do not
+  require `arXiv:ID` or a `[Preprint]` label (cited: APA Style "Preprint Article References" and a
+  Radboud University APA 7 preprint guide). The tool does not output either. We could not open
+  apastyle.apa.org ourselves, and other (non-official) sources disagree about `[Preprint]`.
+  Before submission a team member should open the official APA page and confirm.
 
 ## Known limitations (simplified, not full APA/BibTeX)
 
