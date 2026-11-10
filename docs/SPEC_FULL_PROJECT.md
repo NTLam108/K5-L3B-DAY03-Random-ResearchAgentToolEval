@@ -26,7 +26,7 @@
 |---|---|---|
 | 1 | Provider/model nào chạy eval? (repo khuyến nghị OpenRouter, mặc định trong code `openai/gpt-4o-mini`; chưa có thông tin giá/quota) | Lâm |
 | 2 | Ai giữ `.env` và có đủ key `OPENROUTER_API_KEY`, `TAVILY_API_KEY`, `FIRECRAWL_API_KEY`, `RAPIDAPI_KEY`? | Lâm |
-| 3 | Tool mới của nhóm là gì (tên, chức năng, arg)? | Cả nhóm, Bảo ghi lại |
+| 3 | Tool mới của nhóm: ĐÃ CHỐT là `cite` (xem docs/SPEC_BAO_NEW_TOOL.md mục 0.5) | Đã quyết |
 | 4 | `track` của tool mới là `core` hay `bonus`? | Hỏi coach |
 | 5 | UI dùng Streamlit hay Vercel? Chưa thấy file UI trong cấu trúc README mô tả (chưa kiểm tra thư mục); repo không cung cấp mã UI mẫu | Thịnh |
 | 6 | Email, GitHub, họ tên đầy đủ của Hiếu (MSSV 2A202603860) | Từng người |
@@ -163,7 +163,7 @@ Transcript lưu ở `transcripts/*.transcript.json`. Cần ≥ 3 lượt gồm �
 ### 7.3 Báo cáo nhóm (`report/team/group_report.md`)
 
 - **Phần A** (mục 2: A1 agent làm gì + lệnh UI + link, A2 danh sách tool kể cả tool mới, A3 3–5 câu hỏi mẫu) phải xong **trước showdown 16:30** (giờ buổi lab; CHƯA CÓ THÔNG TIN về ngày lab thực tế của nhóm).
-- **Phần B**: B1 (version), B2 (failure), B3 (10 case), B4 (live chat), B5a (tool mới + test + UI), mục 5 (khó khăn), mục 6, mục 7 (reflection), mục 1 (provider/model dùng cho v0–v3).
+- **Phần B**: B1 (version), B2 (failure), B3 User và phân quyền thì em copy data bị nhầm rồi, đúng sẽ là copy từ Production qua Staging nha.(10 case), B4 (live chat), B5a (tool mới + test + UI), mục 5 (khó khăn), mục 6, mục 7 (reflection), mục 1 (provider/model dùng cho v0–v3).
 - Mỗi bảng phải trỏ tới file/run/transcript/commit thật; nhận xét không bằng chứng thì không tính điểm.
 
 ## 8. Bước 6 — Cả nhóm: Đóng góp cá nhân + nộp bài (C8, 10 điểm)
