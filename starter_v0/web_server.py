@@ -36,6 +36,13 @@ ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 ARTIFACTS_DIR = ROOT / "artifacts"
 
+EXTRA_MIME = {
+    ".js": "text/javascript",
+    ".gltf": "model/gltf+json",
+    ".bin": "application/octet-stream",
+    ".hdr": "application/octet-stream",
+}
+
 MAX_BODY_BYTES = 16 * 1024
 MAX_MESSAGE_CHARS = 2000
 MAX_RESULT_CHARS = 6000
@@ -129,7 +136,7 @@ class WebApp:
         return (
             "default-src 'none'; "
             f"script-src 'self' https://cdn.jsdelivr.net{importmap_hash}; "
-            "style-src 'self'; img-src 'self' data:; connect-src 'self'; "
+            "style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; "
             "base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
         )
 
@@ -259,11 +266,11 @@ def make_handler(app: WebApp) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         server_version = "ResearchAgentWeb/1.0"
 
-        def _headers(self, status: int, content_type: str, length: int) -> None:
+        def _headers(self, status: int, content_type: str, length: int, cache: str = "no-store") -> None:
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(length))
-            self.send_header("Cache-Control", "no-store")
+            self.send_header("Cache-Control", cache)
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("X-Frame-Options", "DENY")
@@ -275,8 +282,8 @@ def make_handler(app: WebApp) -> type[BaseHTTPRequestHandler]:
             self._headers(status, "application/json; charset=utf-8", len(data))
             self.wfile.write(data)
 
-        def _send_bytes(self, status: int, content_type: str, data: bytes) -> None:
-            self._headers(status, content_type, len(data))
+        def _send_bytes(self, status: int, content_type: str, data: bytes, cache: str = "no-store") -> None:
+            self._headers(status, content_type, len(data), cache)
             self.wfile.write(data)
 
         def _read_json(self) -> dict[str, Any] | None:
@@ -321,12 +328,12 @@ def make_handler(app: WebApp) -> type[BaseHTTPRequestHandler]:
             ):
                 self._send_json(HTTPStatus.NOT_FOUND, {"error": "not found"})
                 return
-            content_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
-            if target.suffix == ".js":
-                content_type = "text/javascript"
+            content_type = EXTRA_MIME.get(target.suffix.lower()) or mimetypes.guess_type(target.name)[0] or "application/octet-stream"
             if content_type.startswith("text/") or content_type.endswith("javascript"):
                 content_type += "; charset=utf-8"
-            self._send_bytes(HTTPStatus.OK, content_type, target.read_bytes())
+            # 3D models, textures and the HDRI never change: let the browser cache them.
+            cache = "public, max-age=86400" if relative.startswith("assets/") else "no-store"
+            self._send_bytes(HTTPStatus.OK, content_type, target.read_bytes(), cache)
 
         def do_POST(self) -> None:  # noqa: N802
             path = self.path.split("?", 1)[0]

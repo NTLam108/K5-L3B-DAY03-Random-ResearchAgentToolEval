@@ -23,5 +23,6 @@ python web_server.py --provider openrouter --version v3     # mở http://127.0.
 - Server chỉ lắng nghe `127.0.0.1` theo mặc định và giới hạn 20 request chat mỗi phút (`--max-per-minute`) để người ngoài không đốt hết quota API khi mở link công khai.
 - Chia sẻ link cho team khác: `cloudflared tunnel --url http://localhost:8000`.
 - Three.js được tải từ CDN (jsdelivr, bản 0.160.0). Không có mạng thì cảnh 3D tắt nhưng chat vẫn dùng được.
+- Model 3D và ánh sáng HDRI (khoảng 24 MB) nằm trong `web/assets/`, lấy từ Poly Haven (CC0), danh sách ở `web/assets/CREDITS.md`. Mỗi tool là một đồ vật thật; tool mới chưa có trong bảng `TOOL_MODELS` của `web/app.js` sẽ hiện thành một quả cầu kim loại đơn giản.
 - Test: `pytest tests/test_web_server.py`.
 

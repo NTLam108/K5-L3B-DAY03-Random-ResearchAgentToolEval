@@ -28,8 +28,35 @@ function colorFor(tool) {
 
 // ---------------------------------------------------------------- Three.js stage
 
+// Each tool is shown as a real object (CC0 models from Poly Haven, see assets/CREDITS.md).
+// The metaphor is ours: it is only a visual hint, not a statement about what the tool does internally.
+const TOOL_MODELS = {
+  lookup: "magnifying_glass_01",        // searching the web
+  fetch: "vintage_microscope",          // reading one page closely
+  timeline: "mantel_clock_01",          // posts over time
+  social_search: "vintage_radio_transceiver", // listening to what people say
+  papers: "book_encyclopedia_set_01",   // finding papers
+  paper_text: "binder_notebook",        // full text of a paper
+  policy: "drawer_cabinet",             // internal documents
+  format: "office_notepads",            // laying out a digest
+  clarify: "Megaphone_01",              // asking the user
+  send: "postcard_set_01",              // sending out
+  cite: "stationery_supplies",          // writing a citation
+};
+// Objects modelled lying flat are tilted toward the camera, otherwise they look like a thin line.
+const MODEL_TILT = {
+  binder_notebook: -0.5, office_notepads: -0.7, stationery_supplies: -0.5, book_encyclopedia_set_01: -0.3,
+};
+// Small or flat sets look tiny next to the others; scale them up a little (relative to MODEL_SIZE).
+const MODEL_SCALE = {
+  binder_notebook: 1.3, stationery_supplies: 1.45, book_encyclopedia_set_01: 1.25, vintage_radio_transceiver: 1.15,
+};
+const MODEL_SIZE = 1.25;               // longest side of every object, in scene units
+const MODEL_URL = (id) => `/static/assets/models/${id}/${id}_1k.gltf`;
+const ENV_URL = "/static/assets/env/studio.hdr";
+
 function noopStage() {
-  return { setTools() {}, pulse() {}, setThinking() {} };
+  return { setTools() {}, pulse() {}, setThinking() {}, whenLoaded: Promise.resolve() };
 }
 
 async function createStage() {
@@ -39,6 +66,14 @@ async function createStage() {
   } catch (error) {
     console.warn("Three.js could not be loaded (offline?). The chat still works.", error);
     return noopStage();
+  }
+  let GLTFLoader = null;
+  let RGBELoader = null;
+  try {
+    ({ GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js"));
+    ({ RGBELoader } = await import("three/addons/loaders/RGBELoader.js"));
+  } catch (error) {
+    console.warn("Three.js loaders could not be loaded; using plain shapes.", error);
   }
 
   const canvas = $("#stage");
@@ -51,20 +86,44 @@ async function createStage() {
     return noopStage();
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x060914, 0.018);
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 120);
-  camera.position.set(0, 0, 12.5);
+  const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 120);
+  camera.position.set(0, 0.4, 15.5);
 
-  scene.add(new THREE.AmbientLight(0x6070a0, 0.8));
-  const coreLight = new THREE.PointLight(0x66ccff, 90, 40, 2);
-  scene.add(coreLight);
-  const rim = new THREE.DirectionalLight(0xff4fd8, 0.6);
-  rim.position.set(-6, 4, 5);
-  scene.add(rim);
+  // Studio HDRI = the light source AND what polished metal reflects. Without it, fall back to plain lights.
+  let hasEnvironment = false;
+  const environmentReady = (async () => {
+    if (!RGBELoader) return;
+    try {
+      const hdr = await new RGBELoader().loadAsync(ENV_URL);
+      hdr.mapping = THREE.EquirectangularReflectionMapping;
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const envMap = pmrem.fromEquirectangular(hdr).texture;
+      scene.environment = envMap;
+      scene.background = hdr;
+      scene.backgroundBlurriness = 0.75;
+      scene.backgroundIntensity = 0.05;
+      pmrem.dispose();
+      hasEnvironment = true;
+    } catch (error) {
+      console.warn("HDRI could not be loaded; using plain lights.", error);
+    }
+    if (!hasEnvironment) {
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x302820, 1.4));
+    }
+  })();
 
-  // Radial glow texture (drawn on a canvas, no external asset).
+  const key = new THREE.DirectionalLight(0xfff1dc, 1.6);
+  key.position.set(5, 7, 8);
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0x9fb4ff, 0.35);
+  fill.position.set(-7, 2, -4);
+  scene.add(fill);
+
+  // Agent core: glowing blue sphere inside a wire cage.
   const glowCanvas = document.createElement("canvas");
   glowCanvas.width = glowCanvas.height = 128;
   const g = glowCanvas.getContext("2d");
@@ -74,9 +133,6 @@ async function createStage() {
   grad.addColorStop(1, "rgba(0,0,0,0)");
   g.fillStyle = grad;
   g.fillRect(0, 0, 128, 128);
-  const glowTexture = new THREE.CanvasTexture(glowCanvas);
-
-  // Agent core.
   const core = new THREE.Group();
   const coreMesh = new THREE.Mesh(
     new THREE.IcosahedronGeometry(0.95, 2),
@@ -90,17 +146,17 @@ async function createStage() {
     new THREE.MeshBasicMaterial({ color: 0x7aa2ff, wireframe: true, transparent: true, opacity: 0.35 }),
   );
   const glow = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: glowTexture, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false,
+    map: new THREE.CanvasTexture(glowCanvas), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false,
   }));
   glow.scale.set(7, 7, 1);
   core.add(coreMesh, cage, glow);
   scene.add(core);
 
-  // Background particles.
-  const starCount = 900;
+  // Background: slow-drifting stars (the blurred studio light is set once the HDRI has loaded).
+  const starCount = 1100;
   const starPositions = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount; i += 1) {
-    const radius = 14 + Math.random() * 30;
+    const radius = 16 + Math.random() * 34;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     starPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
@@ -110,24 +166,77 @@ async function createStage() {
   const starGeometry = new THREE.BufferGeometry();
   starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
   const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({
-    color: 0x9fb6ff, size: 0.06, transparent: true, opacity: 0.8, depthWrite: false,
+    color: 0xaec0ff, size: 0.07, transparent: true, opacity: 0.85, depthWrite: false,
   }));
   scene.add(stars);
+  const thinkingLight = new THREE.PointLight(0x66aaff, 0, 14, 2);
+  scene.add(thinkingLight);
 
-  // Tool constellation.
   const constellation = new THREE.Group();
   scene.add(constellation);
+  // Two concentric orbits in one tilted plane. Tools on the same orbit keep their spacing while it spins,
+  // and the two orbits are far enough apart that objects never overlap.
+  const ORBIT_TILT = -1.05;
+  const INNER_RADIUS = 2.9;
+  const OUTER_RADIUS = 5.0;
+  const orbit = new THREE.Group();
+  orbit.rotation.x = ORBIT_TILT;
+  const innerRing = new THREE.Group();
+  const outerRing = new THREE.Group();
+  orbit.add(innerRing, outerRing);
+  constellation.add(orbit);
   /** @type {Map<string, any>} */
   const nodes = new Map();
   const pulses = [];
   const tmp = new THREE.Vector3();
+  const gltfLoader = GLTFLoader ? new GLTFLoader() : null;
+  const modelCache = new Map();
+  let loadToken = 0;
+
+  function loadModel(id) {
+    if (!modelCache.has(id)) {
+      modelCache.set(id, gltfLoader.loadAsync(MODEL_URL(id)).then((gltf) => gltf.scene));
+    }
+    return modelCache.get(id);
+  }
+
+  function fitModel(source, modelId) {
+    const object = source.clone(true);
+    object.traverse((child) => {
+      if (child.isMesh) {
+        child.material = child.material.clone();
+        if (child.material.emissive) child.material.emissive.set(0x000000);
+      }
+    });
+    const box = new THREE.Box3().setFromObject(object);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const scale = (MODEL_SIZE * (MODEL_SCALE[modelId] || 1)) / Math.max(size.x, size.y, size.z, 1e-6);
+    const holder = new THREE.Group();
+    // Move the model's centre to the origin, then scale it so its longest side is MODEL_SIZE.
+    object.position.copy(center).multiplyScalar(-scale);
+    object.scale.setScalar(scale);
+    holder.add(object);
+    holder.rotation.x = MODEL_TILT[modelId] || 0;
+    return holder;
+  }
+
+  function placeholderShape(color) {
+    return new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 24, 24),
+      new THREE.MeshStandardMaterial({ color, metalness: 0.8, roughness: 0.35 }),
+    );
+  }
 
   function clearNodes() {
     for (const node of nodes.values()) {
-      constellation.remove(node.group);
+      node.group.parent?.remove(node.group);
+      node.line.parent?.remove(node.line);
+      node.line.geometry.dispose();
+      node.line.material.dispose();
       node.group.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) obj.material.dispose();
+        if (obj.material && !obj.userData.sharedMaterial) obj.material.dispose();
       });
       node.label.remove();
     }
@@ -136,36 +245,42 @@ async function createStage() {
 
   function setTools(tools) {
     clearNodes();
+    const token = ++loadToken;
     const count = tools.length;
-    const radius = 4.8;
+    const innerCount = count >= 6 ? Math.min(4, Math.floor(count / 3)) : 0;
+    const outerCount = count - innerCount;
+    const jobs = [];
     tools.forEach((tool, i) => {
-      const y = count > 1 ? 1 - (i / (count - 1)) * 2 : 0;
-      const ring = Math.sqrt(Math.max(0, 1 - y * y));
-      const theta = i * Math.PI * (3 - Math.sqrt(5));
-      const position = new THREE.Vector3(Math.cos(theta) * ring * radius, y * radius * 0.72, Math.sin(theta) * ring * radius);
+      // The first tools fill the inner orbit, the rest the outer one.
+      const inner = i < innerCount;
+      const slot = inner ? i : i - innerCount;
+      const slots = inner ? innerCount : outerCount;
+      const angle = (slot / slots) * Math.PI * 2 + (inner ? Math.PI / slots : 0) - Math.PI / 2;
+      const orbitRadius = inner ? INNER_RADIUS : OUTER_RADIUS;
+      const position = new THREE.Vector3(Math.cos(angle) * orbitRadius, Math.sin(angle) * orbitRadius, 0);
+      const parentRing = inner ? innerRing : outerRing;
       const color = new THREE.Color(colorFor(tool));
 
       const group = new THREE.Group();
       group.position.copy(position);
-      const mesh = new THREE.Mesh(
-        tool.team_tool ? new THREE.IcosahedronGeometry(0.38, 0) : new THREE.OctahedronGeometry(0.3, 0),
-        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.4, metalness: 0.2, flatShading: true }),
-      );
-      group.add(mesh);
-      if (tool.team_tool) {
-        const halo = new THREE.Mesh(
-          new THREE.RingGeometry(0.6, 0.66, 48),
-          new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.7, side: THREE.DoubleSide }),
-        );
-        group.add(halo);
-        group.userData.halo = halo;
-      }
-      constellation.add(group);
+      const spinner = new THREE.Group();
+      group.add(spinner);
+      const placeholder = placeholderShape(color);
+      spinner.add(placeholder);
 
-      const lineGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), position.clone()]);
-      const line = new THREE.Line(lineGeometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.16 }));
-      constellation.add(line);
-      group.userData.line = line;
+      // Colour-coding ring (the objects keep their real colours). Always faces the camera.
+      const band = new THREE.Mesh(
+        new THREE.RingGeometry(tool.team_tool ? 0.72 : 0.7, tool.team_tool ? 0.78 : 0.735, 64),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: tool.team_tool ? 0.95 : 0.5, side: THREE.DoubleSide }),
+      );
+      group.add(band);
+      parentRing.add(group);
+
+      const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), position.clone()]),
+        new THREE.LineBasicMaterial({ color: 0xcdb98f, transparent: true, opacity: 0.14 }),
+      );
+      parentRing.add(line);
 
       const label = document.createElement("div");
       label.className = "label" + (tool.team_tool ? " team" : "");
@@ -174,17 +289,34 @@ async function createStage() {
       label.title = tool.description || tool.name;
       labelLayer.appendChild(label);
 
-      nodes.set(tool.name, { group, mesh, line, label, color, flash: 0, seed: Math.random() * 6.28 });
+      const node = { group, spinner, band, bandBase: band.material.opacity, line, label, color, flash: 0, seed: Math.random() * 6.28, materials: [], worldZ: 0 };
+      nodes.set(tool.name, node);
+
+      const modelId = TOOL_MODELS[tool.name];
+      if (gltfLoader && modelId) {
+        jobs.push(loadModel(modelId).then((source) => {
+          if (token !== loadToken) return;
+          const model = fitModel(source, modelId);
+          spinner.remove(placeholder);
+          placeholder.geometry.dispose();
+          placeholder.material.dispose();
+          spinner.add(model);
+          model.traverse((child) => { if (child.isMesh) node.materials.push(child.material); });
+        }).catch((error) => console.warn(`Model for ${tool.name} failed; keeping the plain shape.`, error)));
+      }
     });
+    stage.whenLoaded = Promise.all([environmentReady, ...jobs]).then(() => undefined);
+    return stage.whenLoaded;
   }
 
   function pulse(toolName) {
     const node = nodes.get(toolName);
     if (!node) return;
     const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(0.14, 16, 16),
-      new THREE.MeshBasicMaterial({ color: node.color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }),
+      new THREE.SphereGeometry(0.1, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }),
     );
+    ball.userData.sharedMaterial = false;
     scene.add(ball);
     pulses.push({ ball, node, t: 0 });
   }
@@ -200,9 +332,7 @@ async function createStage() {
     camera.aspect = width / height;
     const narrow = width <= 820;
     const panel = narrow ? 0 : Math.min(440, width);
-    const offsetX = narrow ? 0 : panel / 2;
-    const offsetY = narrow ? height * 0.29 : 0;
-    camera.setViewOffset(width, height, offsetX, offsetY, width, height);
+    camera.setViewOffset(width, height, narrow ? 0 : panel / 2, narrow ? height * 0.29 : 0, width, height);
     camera.updateProjectionMatrix();
   }
   window.addEventListener("resize", resize);
@@ -218,23 +348,26 @@ async function createStage() {
   const clock = new THREE.Clock();
   let elapsed = 0;
   const speed = reduceMotion ? 0.25 : 1;
+  const flashColor = new THREE.Color();
+  const worldPosition = new THREE.Vector3();
 
   function frame() {
     requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 0.05);
     elapsed += dt;
 
-    const spin = (thinking ? 1.8 : 0.35) * speed;
+    const spin = (thinking ? 1.6 : 0.3) * speed;
     core.rotation.y += dt * spin;
     core.rotation.x += dt * spin * 0.4;
     cage.rotation.y -= dt * spin * 1.4;
-    const beat = 1 + Math.sin(elapsed * (thinking ? 7 : 1.6)) * (thinking ? 0.08 : 0.03) * speed;
-    core.scale.setScalar(beat);
+    core.scale.setScalar(1 + Math.sin(elapsed * (thinking ? 7 : 1.6)) * (thinking ? 0.08 : 0.03) * speed);
     coreMesh.material.emissiveIntensity = (thinking ? 1.6 : 0.9) + Math.sin(elapsed * 3) * 0.2 * speed;
     glow.material.opacity = thinking ? 1 : 0.75;
-
-    constellation.rotation.y += dt * 0.1 * speed;
+    thinkingLight.intensity += ((thinking ? 14 + Math.sin(elapsed * 6) * 5 : 0) - thinkingLight.intensity) * Math.min(1, dt * 5);
     stars.rotation.y += dt * 0.012 * speed;
+
+    innerRing.rotation.z += dt * 0.11 * speed;
+    outerRing.rotation.z -= dt * 0.065 * speed;
 
     for (let i = pulses.length - 1; i >= 0; i -= 1) {
       const p = pulses[i];
@@ -253,45 +386,59 @@ async function createStage() {
       p.node.group.getWorldPosition(tmp);
       const ease = p.t * p.t * (3 - 2 * p.t);
       p.ball.position.set(0, 0, 0).lerp(tmp, ease);
-      p.ball.scale.setScalar(1 + Math.sin(p.t * Math.PI) * 1.4);
+      p.ball.scale.setScalar(1 + Math.sin(p.t * Math.PI) * 1.6);
     }
 
     const width = window.innerWidth;
     const height = window.innerHeight;
+    // Where the core appears on screen: labels of tools hidden behind it get dimmed.
+    tmp.set(0, 0, 0).project(camera);
+    const coreX = (tmp.x * 0.5 + 0.5) * width;
+    const coreY = (-tmp.y * 0.5 + 0.5) * height;
     for (const node of nodes.values()) {
       node.flash = Math.max(0, node.flash - dt * 0.55);
-      node.mesh.rotation.y += dt * 0.8 * speed;
-      node.mesh.rotation.x += dt * 0.5 * speed;
-      const bob = 1 + Math.sin(elapsed * 1.4 + node.seed) * 0.06 * speed;
-      node.group.scale.setScalar(bob * (1 + node.flash * 0.9));
-      node.mesh.material.emissiveIntensity = 0.55 + node.flash * 2.4;
-      node.line.material.opacity = 0.16 + node.flash * 0.7;
-      if (node.group.userData.halo) node.group.userData.halo.lookAt(camera.position);
+      node.spinner.rotation.y += dt * 0.55 * speed;
+      node.spinner.rotation.x = Math.sin(elapsed * 0.5 + node.seed) * 0.12 * speed;
+      node.spinner.position.y = Math.sin(elapsed * 1.2 + node.seed) * 0.05 * speed;
+      node.group.scale.setScalar(1 + node.flash * 0.35);
+      flashColor.copy(node.color);
+      for (const material of node.materials) {
+        if (material.emissive) {
+          material.emissive.copy(flashColor);
+          material.emissiveIntensity = node.flash * 0.55;
+        }
+      }
+      node.band.material.opacity = Math.min(1, node.bandBase + node.flash * 0.5);
+      node.band.lookAt(camera.position);
+      node.line.material.opacity = 0.14 + node.flash * 0.6;
 
-      node.group.getWorldPosition(tmp);
-      node.worldZ = tmp.z;
-      tmp.project(camera);
+      node.group.getWorldPosition(worldPosition);
+      node.worldZ = worldPosition.z;
+      tmp.copy(worldPosition).project(camera);
       const visible = tmp.z < 1;
-      // Dim labels of tools that are behind the core so they do not float over it.
-      const behind = node.worldZ < -0.5;
+      const x = (tmp.x * 0.5 + 0.5) * width;
+      const y = (-tmp.y * 0.5 + 0.5) * height;
+      const behind = node.worldZ < 0 && Math.hypot(x - coreX, y - coreY) < 140;
       node.label.style.opacity = visible ? (behind ? "0.3" : "1") : "0";
       if (visible) {
-        const x = (tmp.x * 0.5 + 0.5) * width;
-        const y = (-tmp.y * 0.5 + 0.5) * height;
-        node.label.style.transform = `translate(${x.toFixed(1)}px, ${(y + 22).toFixed(1)}px) translateX(-50%)`;
+        const distance = camera.position.distanceTo(tmp.set(0, 0, 0).add(worldPosition));
+        const pxPerUnit = height / (2 * Math.tan((camera.fov * Math.PI) / 360) * distance);
+        const offset = pxPerUnit * 0.82 + 6;
+        node.label.style.transform = `translate(${x.toFixed(1)}px, ${(y + offset).toFixed(1)}px) translateX(-50%)`;
       }
     }
 
     if (!reduceMotion) {
       camera.position.x += (pointer.x * 0.9 - camera.position.x) * 0.04;
-      camera.position.y += (-pointer.y * 0.6 - camera.position.y) * 0.04;
+      camera.position.y += (0.4 - pointer.y * 0.6 - camera.position.y) * 0.04;
     }
     camera.lookAt(0, 0, 0);
     renderer.render(scene, camera);
   }
   frame();
 
-  return { setTools, pulse, setThinking };
+  const stage = { setTools, pulse, setThinking, whenLoaded: environmentReady };
+  return stage;
 }
 
 // ---------------------------------------------------------------- chat client
@@ -456,8 +603,13 @@ async function init() {
 
   // The 3D scene loads last; the chat above already works without it.
   state.stage = await createStage();
-  state.stage.setTools(state.tools);
   state.stage.setThinking(state.busy);
+  const loading = $("#loading");
+  try {
+    await state.stage.setTools(state.tools);
+  } finally {
+    if (loading) loading.remove();
+  }
 }
 
 init();

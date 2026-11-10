@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Research Agent · Lab Day 03</title>
   <link rel="stylesheet" href="/static/style.css">
-  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body>
   <canvas id="stage" aria-hidden="true"></canvas>
@@ -14,6 +14,7 @@
   <header class="brand">
     <h1>Research Agent</h1>
     <p id="meta" class="meta">Đang kết nối…</p>
+    <p id="loading" class="loading" role="status">Đang tải mô hình 3D…</p>
     <ul class="legend" aria-label="Chú giải màu của các tool">
       <li><i class="c-read"></i>Đọc dữ liệu ngoài</li>
       <li><i class="c-paper"></i>Paper / chính sách</li>
