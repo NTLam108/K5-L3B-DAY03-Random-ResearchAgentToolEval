@@ -26,7 +26,7 @@
 - **Test Challenge:** Điền 14 stub test còn thiếu cho các tool có sẵn (`clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy`), đưa test suite lên **143 passed, 0 skipped, 0 failed**.
 
 ### 2. Gửi Telegram vào Private Channel sau xác nhận (Bonus 2)
-- Khởi tạo Telegram Bot (`@random20k_bot`) và cấp quyền quản trị viên (Admin) vào kênh riêng tư (Private Channel) của nhóm (`Random`).
+- Khởi tạo Telegram Bot (`@random20k_bot`) và cấp quyền quản trị viên (Admin) vào kênh riêng tư (Private Channel) của nhóm (`Random`, Chat ID: `-1004489921806`).
 - Kiểm tra ranh giới an toàn: lượt 1 người dùng yêu cầu đăng tin -> Agent gọi `clarify(response_type="yes_no")` để xin xác nhận; lượt 2 sau khi người dùng đồng ý tường minh -> Agent mới gọi `send(confirmed=True)` và gửi tin nhắn thật lên kênh Telegram qua Bot API.
 - Xuất file transcript bằng chứng: `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json`.
 - Đính kèm ảnh chụp màn hình nhận tin thực tế trong kênh: `report/team/telegram_evidence.jpg`.

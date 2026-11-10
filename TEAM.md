@@ -71,7 +71,7 @@ Mỗi thành viên nộp một báo cáo cá nhân trong `report/team/`:
 
 - Viết 4 công cụ offline an toàn: `cite` (trích dẫn APA/BibTeX), `calc` (tính toán an toàn qua AST), `text_stats` (phân tích từ và chỉ số Flesch), `table_format` (tạo bảng Markdown). Khắc phục lỗi bảo mật DoS trong `calc` qua rào chắn lũy thừa và kích thước danh sách, bổ sung 4 test hồi quy.
 - Viết 30 unit tests cho 4 tool mới và 14 unit tests lấp đầy các stubs cho các tool có sẵn trong `tests/test_tools_todo.py`.
-- Tích hợp gửi thật lên Telegram Bot vào Private Channel của nhóm (`Random`), ghi transcript bảo vệ xác nhận người dùng và ảnh chụp minh chứng.
+- Tích hợp gửi thật lên Telegram Bot vào Private Channel của nhóm (`Random`, Chat ID: `-1004489921806`), ghi transcript bảo vệ xác nhận người dùng và ảnh chụp minh chứng.
 - Triển khai Ollama offline, benchmark `qwen2.5:3b` và `llama3.2:3b`, viết prompt rút gọn `system_prompt_local.md` nâng độ chính xác của Qwen 3B từ 55% lên 75% (multiturn đạt 100%).
 - Hoàn thiện toàn bộ số liệu và phân tích mục B5, B5a, B7 trong `report/team/group_report.md`.
 
