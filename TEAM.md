@@ -62,11 +62,16 @@ Ví dụ: `report/team/20241234_NguyenVanAn.md`.
 
 ### Đóng góp cụ thể
 
--
+- Thiết kế và cài đặt đủ 10 case trong `starter_v0/data/eval_group.json` gồm 5 single-turn và 5 multi-turn, bao quát 6 loại failure types (`wrong_tool`, `wrong_arg_value`, `wrong_boundary`, `unnecessary_tool`, `out_of_scope`, `missing_info`).
+- Tích hợp kiểm thử tool mới `cite` ở cả single-turn (`G01_cite_paper_apa`), multi-turn (`M_G01_papers_then_cite_bibtex`), và kiểm thử thiếu metadata (`G03_clarify_missing_paper_title`).
+- Chạy benchmark `--suite group` qua OpenRouter (`gpt-4o-mini`), phân tích chi tiết lỗi lần chạy đầu (6/10) về cơ chế default argument và multi-turn context, sau đó tinh chỉnh đạt **10/10 PASS (100%)**.
+- Cập nhật mục B3 trong `report/team/group_report.md` và hoàn thiện báo cáo cá nhân `report/team/2A202603860_VuXuanHieu.md`.
 
 ### Bằng chứng
 
--
+- File bộ test: `starter_v0/data/eval_group.json` (10 test cases hợp lệ theo schema).
+- Run file bằng chứng: `starter_v0/runs/v3_B_group_openrouter_20261110T192054234552.json` (10/10 PASS, `provider_error_cases: 0`, độ chính xác 1.0).
+- Bảng B3 trong `report/team/group_report.md` và báo cáo cá nhân `report/team/2A202603860_VuXuanHieu.md`.
 
 ## Trịnh Hưng Thịnh - 2A202603907
 

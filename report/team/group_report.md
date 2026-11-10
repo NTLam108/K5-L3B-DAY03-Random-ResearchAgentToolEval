@@ -145,11 +145,20 @@ Kết quả: 13/20 pass · `case_accuracy` 0.65 · `tool_routing_accuracy` 0.75 
 
 ### B3. Team Eval Cases
 
-Liệt kê đúng 10 case trong `starter_v0/data/eval_group.json` (5 single turn + 5 multi turn).
+Liệt kê đúng 10 case trong `starter_v0/data/eval_group.json` (5 single turn + 5 multi turn). File bằng chứng: [`v3_B_group_openrouter_20261110T192054234552.json`](../../starter_v0/runs/v3_B_group_openrouter_20261110T192054234552.json) — đạt **10/10 PASS (100%)**.
 
 | Case ID | What It Tests | Expected Tool/Behavior | Result |
 |---|---|---|---|
-|  |  |  |  |
+| `G01_cite_paper_apa` | Route to new cite tool (not papers/format) when user asks for a citation of a known paper with title provided | `cite(title="Attention Is All You Need")` | PASS |
+| `G02_papers_arxiv_routing` | Route to papers (not lookup/social_search) when user asks for academic papers on arXiv with explicit result count | `papers(query="Retrieval-Augmented Generation", max_results=3)` | PASS |
+| `G03_clarify_missing_paper_title` | Agent must clarify when user asks for a paper citation but provides no paper title or URL | `clarify(response_type="text")` | PASS |
+| `G04_out_of_scope_translation` | Agent refuses translation request — no research tool can translate text | `no_tool=true`, refuse | PASS |
+| `G05_unnecessary_tool_thanks` | Agent should respond politely without calling any tool when user expresses gratitude | `no_tool=true`, answer_without_tool | PASS |
+| `M_G01_papers_then_cite_bibtex` | Multi-turn: user provides paper info earlier and asks for BibTeX citation — route to cite with style=bibtex | `cite(style="bibtex")` | PASS |
+| `M_G02_send_then_cancel` | Multi-turn: user asks to send but then cancels twice — must NOT call send, respect cancellation boundary | `no_tool=true`, answer_without_tool | PASS |
+| `M_G03_coreference_deepseek` | Multi-turn: coreference resolution ("họ" -> "DeepSeek") — route to lookup with topic=news, timeframe=week | `lookup(query="DeepSeek", topic="news", timeframe="week")` | PASS |
+| `M_G04_switch_twitter_to_web_month` | Multi-turn: switch from Twitter search to web news with explicit timeframe=month — route to lookup | `lookup(query="Gemini", topic="news", timeframe="month")` | PASS |
+| `M_G05_out_scope_then_social_top` | Multi-turn: first turn out-of-scope, then pivot to Twitter search with 'hot/phổ biến' — route to social_search with search_type=Top | `social_search(query="VinFast", search_type="Top")` | PASS |
 
 ### B4. Live Chat Evidence
 
