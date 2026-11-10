@@ -64,8 +64,8 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
 |---|---|---|---:|---:|---|
 | v0 | baseline (`v0+peb1c8179815b+te69bc53ed884`) | Đo hành vi của prompt + tool declaration starter trước khi tối ưu | — | 0.65 | [`v0_B_base_openrouter_20261110T175342743576.json`](../../starter_v0/runs/v0_B_base_openrouter_20261110T175342743576.json) |
 | v1 | `system_prompt.md` (`v1+p9b882949c50b+te69bc53ed884`) | 5/7 lỗi v0 (R08, R10, R11, R12, R14) do chỉ dẫn xấu cố ý trong prompt (đoán account, bịa URL, gửi không xác nhận, ép một tool). Bỏ chúng + thêm rule scope / `clarify` khi thiếu info / xác nhận trước `send` / routing / multi-turn → agent sẽ hỏi lại, xin xác nhận, không gọi tool cho câu ngoài phạm vi | 0.65 | 0.80 | [`v1_B_base_openrouter_20261110T181321621691.json`](../../starter_v0/runs/v1_B_base_openrouter_20261110T181321621691.json) |
-| v2 |  |  |  |  |  |
-| v3 |  |  |  |  |  |
+| v2 | `tools.yaml` — chỉ `clarify`, `timeline`, `social_search`, `lookup` (`v2+p9b882949c50b+t2671f73b309c`) | Lỗi còn lại ở v1 (R10, M02, M06) đều là chọn nhầm giữa các tool đọc dữ liệu. Description starter không phân định ranh giới → viết lại theo mẫu USE / DO NOT use + convention args (`timeline` = bài CỦA một account, handle không `@`, không đoán account; `social_search` = bài VỀ chủ đề, chỉ khi user nhắc Twitter/X, query không rỗng; `lookup` = mặc định cho "tin tức", query chỉ chứa chủ đề; `clarify` khi thiếu account/chủ đề/URL) sẽ sửa routing | 0.80 | 0.95 | [`v2_B_base_openrouter_20261110T183311636102.json`](../../starter_v0/runs/v2_B_base_openrouter_20261110T183311636102.json) |
+| v3 | `tools.yaml` — chỉ `clarify` + `send` (`v3+p9b882949c50b+tca2c31fac562`) | Lỗi duy nhất còn lại ở v2 là R12 (`wrong_boundary`): `clarify` hỏi nội dung bằng `text` thay vì xin xác nhận `yes_no`. Description `clarify`/`send` starter không nói gì về boundary → thêm "`clarify` LUÔN dùng `response_type='yes_no'` trước send/đăng/gửi, kể cả khi nội dung chưa rõ" và "`send` chỉ gọi sau khi user nói yes, `confirmed=true`; không gọi `send` làm phản hồi đầu tiên" sẽ sửa R12 | 0.95 | 0.95 | [`v3_B_base_openrouter_20261110T183608163642.json`](../../starter_v0/runs/v3_B_base_openrouter_20261110T183608163642.json) |
 
 **Chi tiết v0 → v1** (cùng provider `openrouter / openai/gpt-4o-mini`, cả 2 run hợp lệ):
 
@@ -84,6 +84,40 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
   - M02: lượt cuối "Chỉ tìm robotics thôi, vẫn là tin hôm nay" → gọi `social_search` thay vì `lookup`. Rule routing mới chưa nói rõ "tin / tin tức" mặc định là web (`lookup`) khi user không nhắc Twitter.
   - M06: user nói "Bỏ Twitter, chuyển sang web" nhưng model gọi cả `lookup` lẫn `social_search`. Rule mới "nhiều nguồn → gọi nhiều tool" + "giữ ràng buộc trước đó" khiến model giữ luôn Twitter dù user đã bỏ.
 - **Nhận xét trung thực:** R03/R13 được sửa dù v1 không đụng `tools.yaml` → lỗi query `"AI news"` ở v0 có thể là tác dụng phụ của câu "fill in its arguments using your best judgment / single step", không chắc chắn là do thiếu convention args. Giả thuyết ban đầu cho v2 (convention `lookup`) vì vậy kém ưu tiên hơn; v2 nên nhắm vào R10, R12 và 2 regression M02/M06.
+
+**Chi tiết v1 → v2** (cùng provider/model; `prompt_hash` giữ nguyên `9b882949c50b`, chỉ `tools_hash` đổi `e69bc53ed884` → `2671f73b309c`):
+
+| Metric | v1 | v2 | Δ |
+|---|---:|---:|---:|
+| case_accuracy | 0.80 (16/20) | 0.95 (19/20) | +0.15 |
+| tool_routing_accuracy | 0.85 | 1.00 | +0.15 |
+| argument_accuracy | 0.80 | 0.95 | +0.15 |
+| multiturn_accuracy | 0.67 (4/6) | 1.00 (6/6) | +0.33 |
+
+- **FAIL → PASS (3), đúng các case giả thuyết nhắm tới:**
+  - R10: `clarify(question="Bạn muốn tóm tắt tweet từ tài khoản nào?", response_type="text")` — không còn `social_search(query="")`. Nhờ `timeline` ghi "never guess an account, call clarify" và `social_search` ghi "no topic → clarify".
+  - M02: `lookup(query="robotics", topic="news", timeframe="day")` — "tin hôm nay" giờ về `lookup` nhờ dòng "DEFAULT tool for tin tức unless the user explicitly asks for Twitter/X"; timeframe `day` được giữ từ lượt đầu.
+  - M06: chỉ còn `lookup(query="OpenAI", topic="news")` — không gọi thừa `social_search` nhờ "DO NOT use when the user said to stop using Twitter".
+- **PASS → FAIL:** không có (không regression).
+- **Vẫn FAIL (1):** R12 — vẫn `clarify(question="Bạn muốn đăng nội dung gì lên Telegram?", response_type="text")`, cần `yes_no`. v2 cố ý **không** đụng boundary `send` để giữ một giả thuyết/version → để dành cho v3 (boundary xác nhận trong `clarify` + `send`).
+- **Lưu ý về độ ổn định:** v2 được chạy 2 lần (lần đầu bị loại vì lỗi line-ending, xem mục 5), cả hai lần đều 19/20 và cùng fail R12 → kết quả ổn định ở `temperature=0`.
+
+**Chi tiết v2 → v3** (cùng provider/model; `prompt_hash` giữ `9b882949c50b`, `tools_hash` `2671f73b309c` → `ca2c31fac562`; diff chỉ ở `clarify` và `send`):
+
+| Metric | v2 | v3 | Δ |
+|---|---:|---:|---:|
+| case_accuracy | 0.95 (19/20) | 0.95 (19/20) | 0 |
+| tool_routing_accuracy | 1.00 | 1.00 | 0 |
+| argument_accuracy | 0.95 | 0.95 | 0 |
+| multiturn_accuracy | 1.00 | 1.00 | 0 |
+
+- **Giả thuyết v3 KHÔNG được xác nhận.** R12 vẫn FAIL: `clarify(question="Bạn có thể cho biết nội dung chính xác của bản tin mà bạn muốn đăng lên Telegram không?", response_type="text")` → `response_type: expected 'yes_no', got 'text'`.
+- **Không regression:** 19 case còn lại giữ PASS; agent vẫn không tự gọi `send` ở bất kỳ case nào (boundary "không gửi khi chưa xác nhận" đúng ở cả v1–v3).
+- **Phân tích vì sao không sửa được:**
+  - Câu hỏi của model đã đổi (v2: "Bạn muốn đăng nội dung gì?" → v3: "nội dung chính xác của bản tin") → model **có đọc** description mới (phần "include the exact text that would be sent"), nhưng vì "bản tin này" không có nội dung trong hội thoại, model áp dụng rule "thiếu info → `clarify(text)`" mạnh hơn rule "trước khi gửi → `yes_no`".
+  - Hai rule xung đột nằm ở **cả hai file**: `system_prompt.md` (v1) ghi "first call `clarify` with response_type='yes_no', showing the exact text that will be sent" — khi không có text để show, model chọn hỏi text. Sửa riêng `tools.yaml` không đủ để thắng rule trong prompt.
+  - Về mặt hành vi, câu hỏi của model **không nguy hiểm** (không gửi, không bịa nội dung) và có thể coi là hợp lý với người dùng thật; eval chấm cứng `response_type` nên tính FAIL. Đây là case nên **review thủ công** (xem B6).
+- **Giả thuyết cho vòng tiếp theo (v4, nếu làm):** sửa `system_prompt.md` để tách rõ thứ tự ưu tiên — "Khi user yêu cầu đăng/gửi: bước đầu tiên LUÔN là `clarify(yes_no)` xác nhận có muốn gửi hay không (nêu nội dung nếu đã có, nếu chưa thì hỏi xác nhận gửi bản tin đang nói tới); chỉ hỏi nội dung sau khi user đồng ý".
 
 ### B2. Failure Analysis
 
@@ -178,7 +212,9 @@ Lỗi đặc thù của model nhỏ (đếm từ run JSON):
 
 > Khó khăn chính và cách nhóm xử lý. Nếu gặp lỗi kỹ thuật (provider lỗi, hết quota API, tool không chạy), mô tả lỗi và dẫn bằng chứng: run JSON, log, ảnh chụp.
 
--
+- **`prompt_hash` đổi dù không sửa prompt (line ending CRLF trên Windows).** Lần chạy v2 đầu tiên (`v2_B_base_openrouter_20261110T183134276063`) ra `artifact_version = v2+p62930715e2dd+t783b3626bb4e` — `prompt_hash` khác v1 (`9b882949c50b`) dù v2 không sửa `system_prompt.md`. Nguyên nhân: `git config core.autocrlf=true`, khi checkout qua lại branch để push, git đổi `system_prompt.md`/`tools.yaml` từ LF sang CRLF → `versioning.py` hash theo byte nên hash đổi. Kiểm chứng: bỏ `\r` thì SHA-256 của prompt đúng bằng `9b882949c50b…` của v1. Nếu giữ run này, `version_log.csv` sẽ cho thấy v2 sửa cả prompt lẫn tools, làm sai lệch giả thuyết "một thay đổi/version".
+  **Cách xử lý:** thêm `.gitattributes` ép `eol=lf` cho `starter_v0/artifacts/*.md|*.yaml|*.csv`, chuyển 2 file về LF, xoá run lỗi và chạy lại v2 → `v2+p9b882949c50b+t2671f73b309c` (prompt hash khớp v1). Kết quả 2 lần chạy giống nhau (19/20, cùng fail R12).
+- **Terminal Windows lỗi `UnicodeEncodeError` khi in tweet có emoji** (cp1252). Không phải lỗi tool/key; xử lý bằng `$env:PYTHONIOENCODING="utf-8"` trước khi chạy `run_eval.py` / `chat.py`.
 
 ## 6. Tổng hợp đóng góp
 
@@ -186,10 +222,10 @@ Chi tiết đóng góp của từng thành viên nằm trong [TEAM.md](../../TEA
 
 ## 7. Hạn chế và hướng cải thiện — B6. Reflection
 
-- Fix nào thuộc `system_prompt.md`?
-- Fix nào thuộc `tools.yaml`?
-- Failure nào cần review thủ công thay vì chấm tự động?
-- Nếu có thêm một vòng, nhóm sẽ thử giả thuyết nào?
+- **Fix nào thuộc `system_prompt.md`?** Các lỗi **hành vi** (không phụ thuộc tool cụ thể): đoán/bịa thay vì hỏi (R10, R11), gửi không xác nhận (R12), gọi tool cho câu ngoài phạm vi (R08, R14), ép một tool (R13). v1 chỉ sửa prompt mà sửa được 5/7 lỗi v0 (0.65 → 0.80) — các lỗi này do chính chỉ dẫn xấu của starter gây ra.
+- **Fix nào thuộc `tools.yaml`?** Các lỗi **chọn giữa các tool gần nhau** và **convention args**: `timeline` vs `social_search` vs `lookup` (R10 ở v1, M02, M06), khi nào `clarify` (account/chủ đề trống). v2 chỉ sửa description 4 tool mà sửa đúng 3 case nhắm tới, không regression (0.80 → 0.95). Rule routing chung đặt trong prompt (v1) lại gây regression M02/M06 — ranh giới cụ thể đặt ngay trong description của tool hiệu quả hơn.
+- **Failure nào cần review thủ công thay vì chấm tự động?** R12: v1–v3 agent đều **không gửi** và đều hỏi lại (an toàn), chỉ khác `response_type` (`text` vs `yes_no`). Với "đăng bản tin này" không kèm nội dung, hỏi nội dung là phản hồi hợp lý với người dùng thật; eval so khớp cứng `response_type` nên tính FAIL. Tương tự, eval chỉ kiểm tra tool call, không chấm nội dung câu trả lời text của case `no_tool` (R08, R14) — cần đọc tay để chắc agent từ chối lịch sự chứ không trả lời luôn.
+- **Nếu có thêm một vòng, nhóm sẽ thử giả thuyết nào?** v3 cho thấy sửa `tools.yaml` không thắng được câu trong prompt "`clarify` yes_no, showing the exact text" khi chưa có text. Giả thuyết v4: sửa `system_prompt.md` để định rõ thứ tự — yêu cầu đăng/gửi thì bước đầu LUÔN là `clarify(yes_no)` xác nhận ý định gửi (nêu nội dung nếu có), hỏi nội dung sau. Đo lại base để kiểm tra R12 và không regression.
 
 ## 8. Tài liệu tham khảo
 

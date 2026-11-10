@@ -18,16 +18,17 @@ tools:
   - name: clarify
     description: >-
       Ask the user one question and wait for their next message. No data is fetched.
-      USE when: a required argument is missing and not present anywhere in the conversation
+      USE when: (1) a required argument is missing and not present anywhere in the conversation
       — e.g. the user asks for "the latest tweets" without saying whose account and without a topic,
-      or says "this article / bài này" without a URL.
+      or says "this article / bài này" without a URL;
+      (2) ALWAYS before any send / post / publish / đăng / gửi action, to get an explicit yes/no confirmation.
       DO NOT use when: the conversation already contains the needed info (use it directly),
       or the request is out of scope (just answer in text).
     parameters:
       type: object
       properties:
-        question: {type: string, default: "", description: "One short, specific question in the user's language."}
-        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "'text' = ask for missing info (account, URL, topic). 'yes_no' = a yes/no question. 'choice' = pick one of `options`."}
+        question: {type: string, default: "", description: "One short, specific question in the user's language. For a send confirmation, include the exact text that would be sent (or the digest being referred to)."}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "'text' = ask for missing info (account, URL, topic). 'yes_no' = confirmation before a send/post/publish action — ALWAYS use yes_no for that, even if the content is not clear yet. 'choice' = pick one of `options`."}
         options: {type: array, default: [], items: {type: string}, description: "Only for response_type='choice': the list of options. Leave empty otherwise."}
       required: [question]
 
@@ -108,12 +109,17 @@ tools:
 
   # ---------------- Bonus tools ----------------
   - name: send
-    description: "Gửi một đoạn văn bản đi."
+    description: >-
+      Post a text message to the team's private Telegram channel. This is an ACTION with a real side effect.
+      USE only after the user has explicitly confirmed (said yes) to a clarify(response_type='yes_no')
+      question that showed the exact text to send.
+      DO NOT call this as the first response to "đăng / gửi / post lên Telegram" — call clarify with
+      response_type='yes_no' first. Never use send to answer the user or to deliver your own reply.
     parameters:
       type: object
       properties:
-        text: {type: string, default: "", description: "Nội dung"}
-        confirmed: {type: boolean, default: false, description: "Cờ xác nhận"}
+        text: {type: string, default: "", description: "Exact message text the user confirmed. Never invent content."}
+        confirmed: {type: boolean, default: false, description: "true ONLY if the user explicitly said yes to sending this exact text in the conversation; otherwise false (the tool will refuse to send)."}
       required: [text]
 
   - name: policy
