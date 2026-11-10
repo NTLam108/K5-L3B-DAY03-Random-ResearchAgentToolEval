@@ -8,9 +8,9 @@
 
 ## 1. Thông tin nhóm
 
-- Tên nhóm:
+- Tên nhóm: Random
 - Thành viên và phân công: xem [TEAM.md](../../TEAM.md)
-- Provider/model dùng cho v0–v3:
+- Provider/model dùng cho v0–v3: `openrouter / openai/gpt-4o-mini` (cùng một model cho mọi version, theo `provider` và `model` trong các file run)
 
 ## 2. Mục tiêu và cách tiếp cận — PHẦN A: Giới thiệu agent
 
@@ -80,6 +80,8 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
 | v1 | `system_prompt.md` (`v1+p9b882949c50b+te69bc53ed884`) | 5/7 lỗi v0 (R08, R10, R11, R12, R14) do chỉ dẫn xấu cố ý trong prompt (đoán account, bịa URL, gửi không xác nhận, ép một tool). Bỏ chúng + thêm rule scope / `clarify` khi thiếu info / xác nhận trước `send` / routing / multi-turn → agent sẽ hỏi lại, xin xác nhận, không gọi tool cho câu ngoài phạm vi | 0.65 | 0.80 | [`v1_B_base_openrouter_20261110T181321621691.json`](../../starter_v0/runs/v1_B_base_openrouter_20261110T181321621691.json) |
 | v2 | `tools.yaml` — chỉ `clarify`, `timeline`, `social_search`, `lookup` (`v2+p9b882949c50b+t2671f73b309c`) | Lỗi còn lại ở v1 (R10, M02, M06) đều là chọn nhầm giữa các tool đọc dữ liệu. Description starter không phân định ranh giới → viết lại theo mẫu USE / DO NOT use + convention args (`timeline` = bài CỦA một account, handle không `@`, không đoán account; `social_search` = bài VỀ chủ đề, chỉ khi user nhắc Twitter/X, query không rỗng; `lookup` = mặc định cho "tin tức", query chỉ chứa chủ đề; `clarify` khi thiếu account/chủ đề/URL) sẽ sửa routing | 0.80 | 0.95 | [`v2_B_base_openrouter_20261110T183311636102.json`](../../starter_v0/runs/v2_B_base_openrouter_20261110T183311636102.json) |
 | v3 | `tools.yaml` — chỉ `clarify` + `send` (`v3+p9b882949c50b+tca2c31fac562`) | Lỗi duy nhất còn lại ở v2 là R12 (`wrong_boundary`): `clarify` hỏi nội dung bằng `text` thay vì xin xác nhận `yes_no`. Description `clarify`/`send` starter không nói gì về boundary → thêm "`clarify` LUÔN dùng `response_type='yes_no'` trước send/đăng/gửi, kể cả khi nội dung chưa rõ" và "`send` chỉ gọi sau khi user nói yes, `confirmed=true`; không gọi `send` làm phản hồi đầu tiên" sẽ sửa R12 | 0.95 | 0.95 | [`v3_B_base_openrouter_20261110T183608163642.json`](../../starter_v0/runs/v3_B_base_openrouter_20261110T183608163642.json) |
+
+> **Ghi chú về tool `cite`:** `cite` được thêm vào `tools.yaml` **sau v3**. Các run base v0–v3 chạy trên `tools.yaml` chưa có `cite` (v3: `tools_hash` `ca2c31fac562`). Run `--suite group` (`v3_B_group_openrouter_20261110T192054234552`) và các lần chat web dùng bản đã có `cite` (`tools_hash` `bb55ba45624e`). Vì vậy so sánh điểm giữa v0–v3 vẫn sạch, nhưng không nên so run group với run base như cùng một bộ tool.
 
 **Chi tiết v0 → v1** (cùng provider `openrouter / openai/gpt-4o-mini`, cả 2 run hợp lệ):
 

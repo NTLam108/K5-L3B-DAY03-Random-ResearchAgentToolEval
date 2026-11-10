@@ -5,13 +5,15 @@
 - Tên nhóm: Random
 - Lớp: L3B
 - Repo nhóm: `K5-L3B-DAY03-Random-ResearchAgentToolEval` (xem [SUBMISSION.md](SUBMISSION.md))
-- URL repo, nhánh nộp, commit chốt: (điền sau khi push)
+- URL repo: https://github.com/NTLam108/K5-L3B-DAY03-Random-ResearchAgentToolEval
+- Nhánh nộp: `main`
+- Commit chốt: **(nhóm trưởng điền hash commit cuối cùng ngay trước khi nộp, lấy bằng `git rev-parse --short HEAD`)**
 
 ## Thành viên
 
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
-|   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 |  |  | Setup, baseline v0 + phân tích lỗi, vòng v1 |
+|   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 |  | NTLam108 | Setup, baseline v0 + phân tích lỗi, vòng v1 |
 |   2 | Trần Gia Bảo | 2A202603914 |  |  | Tool mới (`tool.py`, `TOOL.md`, đăng ký) + unit test |
 |   3 | Vũ Xuân Hiếu | 2A202603860 | 26ai.hieuvx2@vinuni.edu.vn | vuhieuvh | 10 case eval nhóm, vòng v2/v3 |
 |   4 | Trịnh Hưng Thịnh | 2A202603907 |26ai.thinhth@vinuni.edu.vn  |TrnhThnh  | UI, chat live + transcript, báo cáo nhóm |
