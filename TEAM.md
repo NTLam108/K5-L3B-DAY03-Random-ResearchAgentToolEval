@@ -7,7 +7,7 @@
 - Repo nhóm: `K5-L3B-DAY03-Random-ResearchAgentToolEval` (xem [SUBMISSION.md](SUBMISSION.md))
 - URL repo: https://github.com/NTLam108/K5-L3B-DAY03-Random-ResearchAgentToolEval
 - Nhánh nộp: `main`
-- Commit chốt: `5a4449c` (kỹ thuật) / `8adef74` (tài liệu báo cáo)
+- Commit chốt: `5a4449c` (kỹ thuật) / `406da4a` (tài liệu báo cáo)
 
 ## Thành viên
 
