@@ -14,7 +14,7 @@
 |   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 |  |  | Setup, baseline v0 + phân tích lỗi, vòng v1 |
 |   2 | Trần Gia Bảo | 2A202603914 |  |  | Tool mới (`tool.py`, `TOOL.md`, đăng ký) + unit test |
 |   3 | Vũ Xuân Hiếu | 2A202603860 | 26ai.hieuvx2@vinuni.edu.vn | vuhieuvh | 10 case eval nhóm, vòng v2/v3 |
-|   4 | Trịnh Hưng Thịnh | 2A202603907 |  |  | UI, chat live + transcript, báo cáo nhóm |
+|   4 | Trịnh Hưng Thịnh | 2A202603907 |26ai.thinhth@vinuni.edu.vn  |TrnhThnh  | UI, chat live + transcript, báo cáo nhóm |
 
 ## Cá nhân
 
