@@ -164,3 +164,30 @@ tools:
         url: {type: string, default: "", description: "Địa chỉ bài báo do người dùng cung cấp hoặc lấy từ papers; rỗng nếu không có"}
         style: {type: string, enum: [apa, bibtex], default: "apa", description: "Chuẩn trích dẫn: apa (mặc định); dùng bibtex khi người dùng nhắc BibTeX"}
       required: [title]
+
+  - name: calc
+    description: "Tính toán an toàn các biểu thức toán học hoặc thống kê nghiên cứu (tỷ lệ phần trăm, độ tăng trưởng, giá trị trung bình, công thức số học). Dùng khi người dùng yêu cầu tính toán kết quả số học cụ thể, tính phần trăm hoặc thống kê số liệu từ dữ liệu nghiên cứu. KHÔNG dùng để tra cứu thời gian, không dùng cho quy đổi tiền tệ theo tỷ giá động."
+    parameters:
+      type: object
+      properties:
+        expression: {type: string, default: "", description: "Biểu thức toán học hoặc công thức thống kê cần tính (ví dụ: '(120 - 80) / 80 * 100', 'round(150 / 300, 4)', 'min(12, 18, 5)')"}
+        precision: {type: integer, default: 2, description: "Số chữ số thập phân làm tròn (mặc định 2)"}
+      required: [expression]
+
+  - name: text_stats
+    description: "Phân tích và tính toán các chỉ số thống kê văn bản (đếm từ, đếm ký tự, đếm câu, thời gian đọc ước tính theo phút và điểm độ dễ đọc Flesch Reading Ease). Dùng khi người dùng yêu cầu đánh giá độ dài, độ phức tạp học thuật hoặc thời lượng đọc của một văn bản, bài báo hoặc tóm tắt. KHÔNG dùng để tóm tắt nội dung hay dịch thuật."
+    parameters:
+      type: object
+      properties:
+        text: {type: string, default: "", description: "Đoạn văn bản nghiên cứu hoặc nội dung cần phân tích"}
+      required: [text]
+
+  - name: table_format
+    description: "Chuyển đổi dữ liệu dạng danh sách hàng/cột có cấu trúc thành Markdown Table chuẩn chỉnh (hỗ trợ căn lề left, center, right). Dùng khi cần trình bày dữ liệu so sánh, bảng điểm benchmark hoặc ma trận kết quả nghiên cứu. KHÔNG dùng để trình bày văn bản thông thường (dùng format)."
+    parameters:
+      type: object
+      properties:
+        headers: {type: array, default: [], items: {type: string}, description: "Danh sách tên các cột"}
+        rows: {type: array, default: [], items: {type: array, items: {type: string}}, description: "Danh sách các hàng dữ liệu (mỗi hàng là một mảng giá trị)"}
+        alignment: {type: string, enum: [left, center, right], default: "left", description: "Căn lề cột: left, center hoặc right"}
+      required: [headers, rows]

@@ -18,6 +18,9 @@ from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
 from .cite.tool import make_citation
+from .calc.tool import evaluate_math
+from .text_stats.tool import analyze_text_stats
+from .table_format.tool import format_table
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
@@ -37,6 +40,9 @@ TOOL_FUNCTIONS = {
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
     "cite": make_citation,
+    "calc": evaluate_math,
+    "text_stats": analyze_text_stats,
+    "table_format": format_table,
 }
 
 

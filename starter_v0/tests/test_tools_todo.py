@@ -277,3 +277,123 @@ def test_cite_apa_exactly_20_authors_lists_all_with_ampersand() -> None:
 def test_cite_bibtex_key_keeps_only_letters_and_digits() -> None:
     result = cite_tool(title="Notes", authors=["Jean O'Neil-Smith"], published="2020", style="bibtex")
     assert result["citation"].startswith("@misc{oneilsmith2020,")
+
+
+# ---------------- calc ----------------
+
+calc_tool = TOOL_FUNCTIONS.get("calc")
+
+
+def test_calc_evaluates_basic_arithmetic_and_precedence() -> None:
+    result = calc_tool(expression="(120 - 80) / 80 * 100")
+    assert result["tool"] == "calc"
+    assert result["result"] == 50.0
+    assert result["formatted"] == "50.0"
+
+
+def test_calc_handles_math_functions_and_precision() -> None:
+    result = calc_tool(expression="round(150 / 300, 4)", precision=3)
+    assert result["tool"] == "calc"
+    assert result["result"] == 0.5
+
+    result_min = calc_tool(expression="min(12, 5, 20)")
+    assert result_min["result"] == 5
+
+
+def test_calc_empty_or_whitespace_expression_returns_error_dict() -> None:
+    for empty in ("", "   ", None):
+        result = calc_tool(expression=empty)
+        assert result["tool"] == "calc"
+        assert "error" in result
+        assert "message" in result
+
+
+def test_calc_division_by_zero_returns_error_dict() -> None:
+    result = calc_tool(expression="100 / 0")
+    assert result["tool"] == "calc"
+    assert result["error"] == "ZeroDivisionError"
+
+
+def test_calc_rejects_unsafe_code_execution() -> None:
+    result = calc_tool(expression="__import__('os').system('ls')")
+    assert result["tool"] == "calc"
+    assert "error" in result
+
+
+# ---------------- text_stats ----------------
+
+text_stats_tool = TOOL_FUNCTIONS.get("text_stats")
+
+
+def test_text_stats_calculates_words_sentences_reading_time() -> None:
+    sample = "Artificial intelligence is advancing rapidly. It changes research methodology completely."
+    result = text_stats_tool(text=sample)
+    assert result["tool"] == "text_stats"
+    assert result["words"] == 10
+    assert result["sentences"] == 2
+    assert result["reading_time_minutes"] > 0
+    assert "characters" in result
+
+
+def test_text_stats_flesch_reading_ease_and_level() -> None:
+    sample = "The quick brown fox jumps over the lazy dog. Cats like fish."
+    result = text_stats_tool(text=sample)
+    assert 0 <= result["flesch_reading_ease"] <= 100
+    assert isinstance(result["reading_level"], str)
+
+
+def test_text_stats_empty_string_returns_error_dict() -> None:
+    for empty in ("", "    ", None):
+        result = text_stats_tool(text=empty)
+        assert result["tool"] == "text_stats"
+        assert "error" in result
+
+
+def test_text_stats_non_string_type_returns_error_dict() -> None:
+    result = text_stats_tool(text=12345)
+    assert result["tool"] == "text_stats"
+    assert "error" in result
+
+
+# ---------------- table_format ----------------
+
+table_format_tool = TOOL_FUNCTIONS.get("table_format")
+
+
+def test_table_format_generates_markdown_table_with_alignment() -> None:
+    headers = ["Model", "Score"]
+    rows = [["GPT-4o", 95], ["Claude-3.5", 94]]
+    result = table_format_tool(headers=headers, rows=rows, alignment="center")
+    assert result["tool"] == "table_format"
+    assert result["rows_count"] == 2
+    assert result["cols_count"] == 2
+    assert "| Model | Score |" in result["markdown_table"]
+    assert "| :---: | :---: |" in result["markdown_table"]
+    assert "| GPT-4o | 95 |" in result["markdown_table"]
+
+
+def test_table_format_pads_short_rows_and_truncates_long_rows() -> None:
+    headers = ["A", "B", "C"]
+    rows = [["1"], ["1", "2", "3", "4"]]
+    result = table_format_tool(headers=headers, rows=rows, alignment="left")
+    assert result["tool"] == "table_format"
+    assert result["rows_count"] == 2
+    assert "| :--- | :--- | :--- |" in result["markdown_table"]
+    # Row 1 padded with empty strings
+    assert "| 1 |  |  |" in result["markdown_table"]
+    # Row 2 truncated to 3 columns
+    assert "| 1 | 2 | 3 |" in result["markdown_table"]
+
+
+def test_table_format_empty_headers_returns_error_dict() -> None:
+    for empty in ([], None, ""):
+        result = table_format_tool(headers=empty, rows=[["1", "2"]])
+        assert result["tool"] == "table_format"
+        assert "error" in result
+
+
+def test_table_format_invalid_alignment_returns_error_dict() -> None:
+    result = table_format_tool(headers=["Col1"], rows=[["Val1"]], alignment="diagonal")
+    assert result["tool"] == "table_format"
+    assert "error" in result
+

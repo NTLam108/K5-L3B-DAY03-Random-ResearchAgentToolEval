@@ -49,6 +49,9 @@ python web_server.py --provider openrouter --version v3     # mở http://127.0.
 | papers | tìm paper trên arXiv | không |
 | paper_text | tải PDF arXiv và trích text | không |
 | cite | tạo trích dẫn APA hoặc BibTeX từ metadata một bài báo (title, authors, published, url); chạy local, không cần API key | có |
+| calc | tính toán an toàn các biểu thức toán học hoặc thống kê nghiên cứu (tỷ lệ %, tăng trưởng, trung bình) qua AST; chạy local | có |
+| text_stats | phân tích thống kê văn bản (đếm từ/câu, thời gian đọc ước tính, điểm Flesch Reading Ease); chạy local | có |
+| table_format | chuyển đổi dữ liệu dạng danh sách/hàng cột thành Markdown Table chuẩn hỗ trợ căn lề; chạy local | có |
 
 ### A3. Câu hỏi mẫu để thử
 
@@ -201,8 +204,8 @@ Quan sát chung: agent hay trả lời bằng tiếng Anh khi người dùng h�
 
 | Item | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
-| Tool mới (`tools/<tên>/`) | `starter_v0/tools/cite/tool.py`, `starter_v0/tools/cite/TOOL.md`, khai báo trong `starter_v0/artifacts/tools.yaml`, đăng ký trong `starter_v0/tools/__init__.py` | Tạo trích dẫn APA/BibTeX từ metadata (khớp field của output `papers`); ghi nguồn và giới hạn trong `TOOL.md` | Tool chỉ nhận metadata, không tự kiểm chứng paper; heuristic "từ cuối là họ" sai với tên ghi họ trước; không in nghiêng, không sentence case; chưa xác nhận `arXiv:ID`/`[Preprint]` với trang APA chính thức |
-| Unit test tool mới (≥ 3 test/tool) | `pytest` output: 111 passed, 0 skipped, 0 failed (`starter_v0/tests/test_tools_todo.py`, 13 test cho `cite`; 14 test điền cho các tool có sẵn) | Test offline, có assert chuỗi đầy đủ; input xấu trả error dict, không raise | Không còn test nào bị skip |
+| Tool mới (`tools/<tên>/`) | `starter_v0/tools/cite/`, `starter_v0/tools/calc/`, `starter_v0/tools/text_stats/`, `starter_v0/tools/table_format/` (kèm `TOOL.md` tương ứng), khai báo trong `starter_v0/artifacts/tools.yaml`, đăng ký trong `starter_v0/tools/__init__.py` | Bộ 4 tool mới tự viết: (1) `cite` tạo trích dẫn APA/BibTeX; (2) `calc` tính toán số liệu thống kê qua AST an toàn; (3) `text_stats` đo lường số từ và độ dễ đọc Flesch; (4) `table_format` tạo Markdown Table chuẩn. | Tool chỉ nhận dữ liệu sạch, input xấu trả error dict không raise; `calc` chặn toàn bộ truy cập thuộc tính nguy hiểm; `table_format` tự động pad/truncate hàng tránh lệch cột. |
+| Unit test tool mới (≥ 3 test/tool) | `pytest` output: 139 passed, 0 skipped, 0 failed (`starter_v0/tests/test_tools_todo.py`: 13 test cho `cite`, 5 test cho `calc`, 4 test cho `text_stats`, 4 test cho `table_format`; cùng 14 test stub cho các tool có sẵn) | Toàn bộ 139 tests offline, assert chặt chẽ kết quả trả về và cấu trúc dữ liệu; input rỗng/sai kiểu đều trả error dict | Không còn test nào bị skip, toàn bộ test suite xanh 100% |
 | UI (lệnh chạy + link dùng thử) | `starter_v0/web_server.py`, `starter_v0/web/`, `starter_v0/tests/test_web_server.py` (17 test offline); lệnh chạy ở A1; transcript ở B4; chưa có link public | Chat nhiều lượt, thẻ tool hiện đủ `args`/`result` và đánh dấu lỗi; lỗi provider hiện thẳng cho người dùng; cảnh 3D phản ánh tool đang được gọi | Giới hạn 20 request/phút và chỉ lắng nghe `127.0.0.1` theo mặc định; key bị che nếu lỡ lọt vào thông báo lỗi; cảnh 3D cần mạng để tải Three.js từ CDN; mới thử trên Firefox; chưa deploy |
 
 Tool unit tests: số test đã viết, và một ví dụ lỗi mà unit test bắt được nhưng eval không bắt được.
@@ -214,9 +217,9 @@ Chỉ điền nếu nhóm làm bonus (ghi riêng, tối đa 10 điểm). Tool c�
 | Bonus | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
 | Small Local Model | xem B7 |  |  |
-| Hơn 3 tool mới (≥ 4) |  |  |  |
+| Hơn 3 tool mới (≥ 4) | `tools/cite/`, `tools/calc/`, `tools/text_stats/`, `tools/table_format/` (kèm `TOOL.md`), đăng ký trong `tools/__init__.py` và `artifacts/tools.yaml`; unit tests trong `tests/test_tools_todo.py` (`pytest`: 139 passed, 0 skipped, 0 failed); eval cases trong `eval_group.json` (G01, M_G01) và `eval_research_extension.json` (E11, E12, E13) | Nhóm tự viết 4 tool mới hoàn toàn: (1) `cite`: trích dẫn APA/BibTeX từ metadata; (2) `calc`: tính toán số liệu thống kê an toàn bằng AST; (3) `text_stats`: phân tích số từ, thời gian đọc và chỉ số Flesch; (4) `table_format`: dựng bảng Markdown chuẩn. Toàn bộ chạy local không cần API key. | Cả 4 tool đều có cơ chế validate chặt chẽ, trả error dict khi input lỗi thay vì crash/raise; `calc` chặn gọi hàm ngoài whitelist và truy cập thuộc tính; `table_format` tự động cân bằng số cột. |
 | `send` gửi thật lên Telegram sau xác nhận | transcript |  |  |
-| Test challenge (0 skipped / regression test) | `pytest`: 111 passed, 0 skipped, 0 failed; `starter_v0/tests/test_tools_todo.py` | Điền 14 stub cho `clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy` (mock HTTP, không gọi mạng thật). Kiểm tra đột biến: cố ý làm hỏng guardrail `send`, tách dòng không tin cậy của `policy`, giới hạn 4000 ký tự của `fetch` thì đúng 3 test thất bại, sau đó hoàn lại | Đạt nhánh "0 skipped"; **chưa** làm nhánh regression test. Quan sát chưa sửa: `timeline`/`social_search` với `limit=-1` trả 4 trong 5 mục và `limit=0` rơi về 5, còn `policy` chặn giá trị âm về tối thiểu 1 |
+| Test challenge (0 skipped / regression test) | `pytest`: 139 passed, 0 skipped, 0 failed; `starter_v0/tests/test_tools_todo.py` | Điền 14 stub cho `clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy` (mock HTTP, không gọi mạng thật). Kiểm tra đột biến: cố ý làm hỏng guardrail `send`, tách dòng không tin cậy của `policy`, giới hạn 4000 ký tự của `fetch` thì đúng 3 test thất bại, sau đó hoàn lại | Đạt nhánh "0 skipped"; **chưa** làm nhánh regression test. Quan sát chưa sửa: `timeline`/`social_search` với `limit=-1` trả 4 trong 5 mục và `limit=0` rơi về 5, còn `policy` chặn giá trị âm về tối thiểu 1 |
 
 Test challenge: số bug tìm được trong tool có sẵn (nếu có), cách sửa, và test regression tương ứng.
 

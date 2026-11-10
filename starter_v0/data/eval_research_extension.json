@@ -104,6 +104,33 @@
       "failure_type": "wrong_tool",
       "expect": {"tool_calls": [{"name": "papers", "args": {}}]},
       "metadata": {"skill": "arxiv_research_search", "difficulty": "medium", "what_it_tests": "Research paper/arXiv discovery → arxiv_search."}
+    },
+    {
+      "id": "E11_calc_math_eval",
+      "phase": "B",
+      "suite": "extension",
+      "query": "Tính giúp mình tỷ lệ tăng trưởng: (120 - 80) / 80 * 100",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "calc", "args": {"expression": "(120 - 80) / 80 * 100"}}]},
+      "metadata": {"skill": "calc_math_eval", "difficulty": "easy", "what_it_tests": "Calculate math/statistical formula → calc"}
+    },
+    {
+      "id": "E12_text_stats_analysis",
+      "phase": "B",
+      "suite": "extension",
+      "query": "Phân tích số từ và điểm dễ đọc Flesch của đoạn văn: 'Artificial intelligence is rapidly transforming modern computational sciences.'",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "text_stats", "args": {"text": "Artificial intelligence is rapidly transforming modern computational sciences."}}]},
+      "metadata": {"skill": "text_stats_analysis", "difficulty": "easy", "what_it_tests": "Analyze word count and readability → text_stats"}
+    },
+    {
+      "id": "E13_table_format_markdown",
+      "phase": "B",
+      "suite": "extension",
+      "query": "Trình bày danh sách sau thành bảng markdown với các cột Model, Score",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "table_format", "args": {"headers": ["Model", "Score"]}}]},
+      "metadata": {"skill": "table_format_markdown", "difficulty": "easy", "what_it_tests": "Format structured data into markdown table → table_format"}
     }
   ]
 }
