@@ -62,10 +62,28 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
 
 | Version | Changed Artifact | Hypothesis | Metric Before | Metric After | Run File |
 |---|---|---|---:|---:|---|
-| v0 | baseline |  |  |  |  |
-| v1 |  |  |  |  |  |
+| v0 | baseline (`v0+peb1c8179815b+te69bc53ed884`) | Đo hành vi của prompt + tool declaration starter trước khi tối ưu | — | 0.65 | [`v0_B_base_openrouter_20261110T175342743576.json`](../../starter_v0/runs/v0_B_base_openrouter_20261110T175342743576.json) |
+| v1 | `system_prompt.md` (`v1+p9b882949c50b+te69bc53ed884`) | 5/7 lỗi v0 (R08, R10, R11, R12, R14) do chỉ dẫn xấu cố ý trong prompt (đoán account, bịa URL, gửi không xác nhận, ép một tool). Bỏ chúng + thêm rule scope / `clarify` khi thiếu info / xác nhận trước `send` / routing / multi-turn → agent sẽ hỏi lại, xin xác nhận, không gọi tool cho câu ngoài phạm vi | 0.65 | 0.80 | [`v1_B_base_openrouter_20261110T181321621691.json`](../../starter_v0/runs/v1_B_base_openrouter_20261110T181321621691.json) |
 | v2 |  |  |  |  |  |
 | v3 |  |  |  |  |  |
+
+**Chi tiết v0 → v1** (cùng provider `openrouter / openai/gpt-4o-mini`, cả 2 run hợp lệ):
+
+| Metric | v0 | v1 | Δ |
+|---|---:|---:|---:|
+| case_accuracy | 0.65 (13/20) | 0.80 (16/20) | +0.15 |
+| tool_routing_accuracy | 0.75 | 0.85 | +0.10 |
+| argument_accuracy | 0.65 | 0.80 | +0.15 |
+| multiturn_accuracy | 1.00 (6/6) | 0.67 (4/6) | **−0.33** |
+
+- **FAIL → PASS (5):** R08, R14 (không còn gọi `send` để trả lời câu ngoài phạm vi), R11 (gọi `clarify` xin URL thay vì bịa `example.com`), R03, R13 (query còn `"AI"`, có `topic="news"`).
+- **Vẫn FAIL (2):**
+  - R10: không đoán `sama` nữa, nhưng chuyển sang `social_search(query="", limit=5)` thay vì `clarify` — model hiểu "5 tweet mới nhất" là tìm theo chủ đề với query rỗng. Rule "thiếu account → clarify" trong prompt chưa đủ vì model không nhận ra request cần account.
+  - R12: đã gọi `clarify` (không tự gửi nữa — boundary đúng hướng) nhưng `response_type="text"` hỏi "Bạn muốn đăng nội dung gì?" thay vì `yes_no`. Vì "bản tin này" không kèm nội dung, model hỏi nội dung trước; eval kỳ vọng hỏi xác nhận yes/no.
+- **PASS → FAIL (2, regression multi-turn):**
+  - M02: lượt cuối "Chỉ tìm robotics thôi, vẫn là tin hôm nay" → gọi `social_search` thay vì `lookup`. Rule routing mới chưa nói rõ "tin / tin tức" mặc định là web (`lookup`) khi user không nhắc Twitter.
+  - M06: user nói "Bỏ Twitter, chuyển sang web" nhưng model gọi cả `lookup` lẫn `social_search`. Rule mới "nhiều nguồn → gọi nhiều tool" + "giữ ràng buộc trước đó" khiến model giữ luôn Twitter dù user đã bỏ.
+- **Nhận xét trung thực:** R03/R13 được sửa dù v1 không đụng `tools.yaml` → lỗi query `"AI news"` ở v0 có thể là tác dụng phụ của câu "fill in its arguments using your best judgment / single step", không chắc chắn là do thiếu convention args. Giả thuyết ban đầu cho v2 (convention `lookup`) vì vậy kém ưu tiên hơn; v2 nên nhắm vào R10, R12 và 2 regression M02/M06.
 
 ### B2. Failure Analysis
 
