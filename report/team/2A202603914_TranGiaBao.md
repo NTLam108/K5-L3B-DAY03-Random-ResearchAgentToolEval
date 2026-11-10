@@ -73,9 +73,9 @@
     + Chạy `pytest` toàn bộ 143 test cases offline, đảm bảo không có test nào bị skip hay lỗi.
     + Thử nghiệm gọi tool trực tiếp với các giá trị đầu vào sai kiểu dữ liệu để chắc chắn tool trả error dict mà không làm sập chương trình.
     + Kiểm tra kỹ file `.env`, file run và transcript để đảm bảo không rò rỉ token Telegram hay API key bí mật vào git.
-  - *Rà soát và củng cố bảo mật cùng nhóm (Hardening session):*
-    + Nhóm đã thực hiện kiểm tra đột biến (mutation testing): cố tình làm sai guardrail của `send`, logic chia dòng của `policy`, giới hạn ký tự của `fetch` và xác nhận test suite bắt được lỗi.
-    + Nhóm đã stress-test các ca DoS trên `calc` (`10**10**10`, `[0]*10**9`), từ đó bổ sung rào chắn chặn tính toán quá 10.000 bit và thêm 4 test hồi quy.
+  - *Rà soát và củng cố bảo mật (do đồng đội thực hiện trong phiên hardening):*
+    + Đồng đội đã thực hiện kiểm tra đột biến (mutation testing): cố tình làm sai guardrail của `send`, logic chia dòng của `policy`, giới hạn ký tự của `fetch` và xác nhận test suite bắt được lỗi.
+    + Đồng đội đã phát hiện lỗ hổng và stress-test các ca DoS trên `calc` (`10**10**10`, `[0]*10**9`), từ đó bổ sung rào chắn chặn tính toán quá 10.000 bit và thêm 4 test hồi quy. Phần này do đồng đội đóng góp trong phiên rà soát, không phải kiểm tra độc lập ban đầu của Bảo.
 
 ## 5. Tự đánh giá
 
