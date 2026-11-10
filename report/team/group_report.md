@@ -71,9 +71,25 @@ Lấy từ `starter_v0/artifacts/version_log.csv` và `starter_v0/runs/*.json`. 
 
 Lấy từ `results[*].result.failures` trong run JSON.
 
+**Run v0:** [`starter_v0/runs/v0_B_base_openrouter_20261110T175342743576.json`](../../starter_v0/runs/v0_B_base_openrouter_20261110T175342743576.json) — `openrouter / openai/gpt-4o-mini`, artifact `v0+peb1c8179815b+te69bc53ed884`, hợp lệ (`provider_error_cases = 0`, `measured_cases = total_cases = 20`).
+Kết quả: 13/20 pass · `case_accuracy` 0.65 · `tool_routing_accuracy` 0.75 · `argument_accuracy` 0.65 · `multiturn_accuracy` 1.0 (6/6 multi-turn pass, cả 7 lỗi đều ở single-turn).
+
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| R03_web_news_routing | `wrong_tool` (case) → quan sát: `wrong_arg_value` | `lookup(query="AI news", topic="news", timeframe="day", max_results=5)` | Route đúng `lookup`, `topic`/`timeframe` đúng, nhưng `query: expected 'AI', got 'AI news'` — model nhồi chữ "news" vào query dù đã có `topic=news`. Nguyên nhân: description của `query` chỉ ghi "Truy vấn", không có quy ước query chỉ chứa chủ đề cốt lõi. | `tools.yaml`: mô tả `query` = từ khóa chủ đề cốt lõi, KHÔNG thêm "news/tin tức/hôm nay" vì đã thể hiện qua `topic`/`timeframe` |
+| R08_out_of_scope | `out_of_scope` → quan sát: `unexpected_tool_call` | `send(text="Nguyên hàm của x^2 là x^3/3 + C…")` | Câu toán ngoài phạm vi research nhưng model gọi `send` để "trả lời". Nguyên nhân: prompt "Always finish the request in a single step. Pick one tool" ép luôn gọi tool; `send` mô tả mơ hồ "Gửi một đoạn văn bản đi" nên bị dùng như kênh trả lời. Code guardrail của `send` chặn lại (`status: needs_confirmation`) nên không gửi thật. | `system_prompt.md`: bỏ câu ép "pick one tool"; thêm rule phạm vi: chỉ làm research/tin tức, ngoài phạm vi thì từ chối bằng text, không gọi tool |
+| R10_missing_handle | `missing_info` → quan sát: `missing_tool_call` | `timeline(screenname="sama")` | Thiếu tài khoản nhưng không hỏi lại, tự đoán `sama`. Nguyên nhân trực tiếp: prompt dặn "If a request mentions a tweet… doesn't say whose, pick a well-known account like Sam Altman" và "do not ask them back". | `system_prompt.md`: bỏ chỉ dẫn đoán; thêm rule thiếu handle/URL → gọi `clarify(response_type="text")` |
+| R11_missing_url | `missing_info` → quan sát: `missing_tool_call` | `fetch(url="https://example.com/article")` | "Bài viết này" nhưng không có link → model bịa URL `example.com/article` rồi đọc trang đó. Nguyên nhân: prompt dặn "assume a likely URL and read it". | `system_prompt.md`: bỏ chỉ dẫn bịa URL; `fetch` chỉ dùng khi user đưa URL cụ thể, không có thì `clarify` |
+| R12_confirm_before_send | `wrong_boundary` → quan sát: `missing_tool_call` | `send(text="Bản tin này đã được đăng lên Telegram.")` | Hành động ghi ra ngoài nhưng không xin xác nhận, còn bịa nội dung gửi. Nguyên nhân: prompt "When the user wants to send… just go ahead and do it"; `send.confirmed` chỉ mô tả "Cờ xác nhận". Tool trả `needs_confirmation` nên không gửi thật. | `system_prompt.md`: bỏ chỉ dẫn gửi ngay, thêm boundary: trước khi gửi phải `clarify(response_type="yes_no")` kèm nội dung; `tools.yaml`: `send` chỉ gọi `confirmed=true` sau khi user đồng ý rõ ràng |
+| R13_parallel_web_and_tweets | `wrong_tool` (case) → quan sát: `wrong_arg_value` | `lookup(query="AI news", timeframe="day", max_results=5)` + `social_search(query="AI", search_type="Latest", limit=5)` | Gọi đủ 2 tool (routing đúng) nhưng `lookup` sai args: `query: expected 'AI', got 'AI news'` và `topic: expected 'news', got None` (thiếu `topic=news` dù hỏi "tin AI hôm nay"). Nguyên nhân: không có quy ước `topic=news` cho tin thời sự; cùng lỗi query như R03. | `tools.yaml`: `topic` = `news` khi hỏi tin tức/thời sự, `general` cho tra cứu chung; quy ước `query` như R03. `system_prompt.md`: cho phép gọi nhiều tool khi request cần nhiều nguồn (bỏ "single step") |
+| R14_out_of_scope_coding | `out_of_scope` → quan sát: `unexpected_tool_call` | `send(text="Dưới đây là một hàm Python tính số Fibonacci…")` | Câu coding ngoài phạm vi nhưng model nhét câu trả lời vào `send`. Cùng nguyên nhân với R08. | Như R08; thêm vào description `send`: KHÔNG dùng để trả lời user, chỉ để đăng bản tin lên Telegram |
+
+**Nhận xét chung v0:**
+
+- 5/7 lỗi (R08, R10, R11, R12, R14 — gồm cả 2 out-of-scope) truy trực tiếp về các chỉ dẫn xấu cố ý trong `system_prompt.md` ("do not ask them back", "pick Sam Altman", "assume a likely URL", "just go ahead and do it", "single step / pick one tool") → giả thuyết cho **v1**: bỏ các chỉ dẫn này + thêm rule `clarify`/xác nhận/phạm vi.
+- 2/7 lỗi (R03, R13) là lỗi convention args do `tools.yaml` mơ hồ (`query`, `topic`) → giả thuyết cho version sau: viết lại description tham số `lookup`.
+- `send` bị gọi sai 3 lần (R08, R12, R14) nhưng không gửi thật nhờ guardrail trong code (`status: needs_confirmation`) — đây là lớp bảo vệ của tool, không phải của model; boundary vẫn phải sửa ở prompt/declaration.
+- R03 và R13 có `failure_type` của case là `wrong_tool` nhưng thực tế routing đúng, lỗi là args — khi phân tích nên đọc `observed_mismatch` thay vì chỉ nhìn `failure_type`.
 
 ### B3. Team Eval Cases
 
