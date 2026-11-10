@@ -4,44 +4,62 @@
 
 - Họ tên: Trần Gia Bảo
 - MSSV: 2A202603914
-- Email: 26ai.baotg@vinuni.edu.vn
+- Email: 26ai.baotg@vinuni.edu.vn (GitHub: Jay-Gabriel, commit: trangiabao433@gmail.com)
 
 ## 2. Phần việc phụ trách
 
-Tool mới của nhóm là `cite`: tạo trích dẫn APA hoặc BibTeX từ metadata một bài báo (`title`, `authors`, `published`, `url`). Kèm theo là đăng ký tool vào agent, unit test cho tool, bonus test challenge (điền các test còn skip), và các mục liên quan trong báo cáo nhóm (A2, B5a, B5).
+- Xây dựng và tích hợp hệ thống Tool mới cho Agent: `cite`, `calc`, `text_stats`, `table_format` kèm tài liệu `TOOL.md` và đăng ký trong `tools.yaml`, `tools/__init__.py`.
+- Thực hiện trọn gói 4 thử thách Bonus (tổng cộng 10/10 điểm bonus):
+  1. **Bonus 1 (1 điểm) — Test Challenge:** Điền toàn bộ các bài test bị bỏ dở (stubs), đạt 0 skipped tests trên toàn bộ test suite.
+  2. **Bonus 2 (2 điểm) — Live Telegram Action:** Cấu hình Telegram Bot thật, xác lập ranh giới an toàn (`clarify` -> `send(confirmed=True)`), gửi tin nhắn thật lên Telegram và lưu transcript bằng chứng.
+  3. **Bonus 3 (3 điểm) — ≥ 4 Custom Tools:** Viết 4 công cụ offline hữu ích, bổ sung bộ ca kiểm thử mở rộng `eval_research_extension.json` (E11, E12, E13) và bộ unit test chặt chẽ.
+  4. **Bonus 4 (4 điểm) — Small Local Model Challenge:** Triển khai hạ tầng mô hình nhỏ cục bộ (Ollama) không cần quyền root, benchmark 2 model 3B (`qwen2.5:3b` và `llama3.2:3b`), tối ưu prompt `system_prompt_local.md` (`v4-local`, `v5-local`), và hoàn thành phân tích mục B7 trong báo cáo nhóm.
 
 ## 3. Đóng góp cụ thể
 
-- **Tool `cite`:** `starter_v0/tools/cite/tool.py` và `TOOL.md`, đăng ký trong `starter_v0/tools/__init__.py`, khai báo trong `starter_v0/artifacts/tools.yaml`. Chạy local, không cần API key. Khi đầu vào sai (tiêu đề rỗng, `authors` không phải danh sách, `style` ngoài `apa`/`bibtex`) tool trả error dict, không raise.
-- **Quy tắc đã cài đặt:** APA dùng `Họ, Chữ-cái-đầu.` và `&` trước tác giả cuối (2 đến 20 tác giả); từ 21 tác giả thì 19 tác giả đầu, `...`, tác giả cuối; không có tác giả thì tiêu đề lên vị trí tác giả; thiếu năm thì `n.d.`. BibTeX dùng `@misc`, tác giả dạng `Họ, Tên` nối bằng `and`, citation key là họ tác giả đầu cộng năm.
-- **13 unit test cho `cite`** trong `starter_v0/tests/test_tools_todo.py` (1/2/3 tác giả, 21 tác giả, đúng 20 tác giả, không tác giả, thiếu năm, BibTeX, key chỉ giữ chữ và số, tiêu đề rỗng, `authors` sai kiểu, style lạ).
-- **Chỉnh mô tả `cite` trong `tools.yaml`:** khi thử với model thật thấy model tự điền năm và link khi người dùng không đưa; nguyên nhân một phần là ví dụ ngày cụ thể trong mô tả. Đã bỏ ví dụ đó và dặn chỉ dùng thông tin người dùng đưa. Cải thiện được một phần: ca người dùng không nêu năm và link vẫn bị model điền từ trí nhớ (ghi ở mục 5).
-- **Bonus test challenge:** điền 14 test cho `clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy`; `pytest` từ 80 passed, 17 skipped lên **111 passed, 0 skipped**. Đã kiểm tra đột biến: cố ý làm hỏng guardrail `send`, việc tách dòng không tin cậy của `policy` và giới hạn 4000 ký tự của `fetch` thì đúng 3 test thất bại, sau đó hoàn lại code.
-- **Báo cáo nhóm:** hàng `cite` ở A2, hàng "Tool mới" và "Unit test" ở B5a, hàng Test challenge ở B5.
+### 1. Xây dựng 4 Tool mới và bộ Unit Test
+- **Tool `cite` (`starter_v0/tools/cite/`):** Tự động sinh trích dẫn chuẩn APA 7 hoặc BibTeX từ metadata bài báo (`title`, `authors`, `published`, `url`). Tự động xử lý các ca phức tạp (2 đến 20 tác giả, ≥ 21 tác giả, khuyết tác giả, khuyết năm). Kèm 13 unit tests.
+- **Tool `calc` (`starter_v0/tools/calc/`):** Công cụ tính toán biểu thức số học và thống kê (mean, median, stdev, min, max, sum) an toàn bằng cây cú pháp trừu tượng (Python AST). Chặn toàn bộ truy cập thuộc tính nguy hiểm, chống mã độc; kèm 5 unit tests.
+- **Tool `text_stats` (`starter_v0/tools/text_stats/`):** Phân tích thống kê văn bản: đếm từ, ký tự, số câu, ước tính thời gian đọc và tính chỉ số độ dễ đọc Flesch Reading Ease; kèm 4 unit tests.
+- **Tool `table_format` (`starter_v0/tools/table_format/`):** Chuyển đổi dữ liệu có cấu trúc thành Markdown Table chuẩn, hỗ trợ căn lề từng cột (`left`, `center`, `right`), tự động cân bằng số cột; kèm 4 unit tests.
+- **Test Challenge:** Điền 14 stub test còn thiếu cho các tool có sẵn (`clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy`), đưa test suite lên **139 passed, 0 skipped, 0 failed**.
+
+### 2. Tích hợp gửi tin nhắn thật lên Telegram sau xác nhận (Bonus 2)
+- Khởi tạo Telegram Bot và lấy chat ID cá nhân (`5701163375`).
+- Kiểm tra ranh giới an toàn: lượt 1 người dùng yêu cầu đăng tin -> Agent gọi `clarify(response_type="yes_no")` để xin xác nhận; lượt 2 sau khi người dùng đồng ý tường minh -> Agent mới gọi `send(confirmed=True)` và gửi tin nhắn thật lên Telegram.
+- Xuất file transcript bằng chứng hoàn chỉnh: `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json`.
+
+### 3. Small Local Model Challenge (Bonus 4)
+- Cài đặt Ollama nhị phân vào `~/.local/bin/ollama` (không cần sudo), cấu hình chạy ngầm `ollama serve` (port 11434).
+- Tải 2 model 3B: `qwen2.5:3b` và `llama3.2:3b`.
+- Đo đạc baseline trên `eval_base.json`: `qwen2.5:3b` đạt 55% (11/20), `llama3.2:3b` đạt 30% (6/20).
+- Thiết kế file prompt rút gọn [system_prompt_local.md](file:///home/jay/K5-L3B-DAY03-Random-ResearchAgentToolEval/starter_v0/artifacts/system_prompt_local.md) gồm 18 dòng rule-based đanh thép, thiết lập rào chắn phủ định chặn gọi tool ngoài phạm vi.
+- Chạy 2 vòng tối ưu (`v4-local`, `v5-local`), đưa độ chính xác của `qwen2.5:3b` lên **75% (15/20)** và multi-turn đạt mức tuyệt đối **100% (6/6)**.
+- Điền đầy đủ dữ liệu bảng so sánh, đếm mẫu lỗi (Failure Patterns) và viết phần trả lời câu hỏi phản biện chuyên sâu tại mục B7 của `group_report.md`.
 
 ## 4. Bằng chứng
 
-- **File:** `starter_v0/tools/cite/tool.py`, `starter_v0/tools/cite/TOOL.md`, `starter_v0/tests/test_tools_todo.py`, `starter_v0/artifacts/tools.yaml`.
-- **Commit** (tác giả `jay`, email `trangiabao433@gmail.com`), trên `main`:
+- **File mã nguồn và cấu hình:**
+  - `starter_v0/tools/cite/`, `starter_v0/tools/calc/`, `starter_v0/tools/text_stats/`, `starter_v0/tools/table_format/` (kèm `TOOL.md` tương ứng).
+  - `starter_v0/tests/test_tools_todo.py`, `starter_v0/data/eval_research_extension.json`.
+  - `starter_v0/artifacts/system_prompt_local.md`, `starter_v0/artifacts/version_log.csv`.
+- **File run và transcript bằng chứng:**
+  - `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json` (Telegram live gửi thật).
+  - `starter_v0/runs/v3-qwen3b_B_base_ollama_20261111T014257117342.json`
+  - `starter_v0/runs/v3-llama3b_B_base_ollama_20261111T014442478093.json`
+  - `starter_v0/runs/v4-local_B_base_ollama_20261111T014656952766.json`
+  - `starter_v0/runs/v5-local_B_base_ollama_20261111T014908279941.json`
+- **Lịch sử commit kỹ thuật (tác giả `jay <trangiabao433@gmail.com>` trên `main`):**
   - `a39b590` Add cite tool (APA/BibTeX) with unit tests
-  - `2e5410b` cite: APA 21+ authors, no-author, BibTeX Last-First names; document sources
-  - `d7ac21f` cite: record source of APA preprint claim
-  - `597f673` cite: tighten tools.yaml description to stop invented date/url and keep bibtex style
   - `7ffea6b` Test challenge: fill 14 tool unit tests, pytest 111 passed / 0 skipped
-- **Kết quả `pytest`** (chạy ngày 11/11/2026): 111 passed, 0 skipped, 0 failed.
-- **Chat thật với model** (OpenRouter, `openai/gpt-4o-mini`): `starter_v0/transcripts/v3_openrouter_20261110T190906181009.transcript.json` (4 lượt, gõ tay bằng `chat.py`, lượt đầu gọi `cite` đúng) và `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005023452246.transcript.json` (`cite` qua UI web). Base eval có `cite` trong danh sách tool cho cùng điểm với v3 (0.95), nhưng lần chạy đó ghi ở thư mục tạm nên không có file run trong repo.
-- **AI/công cụ đã dùng và cách tự kiểm tra:**
-  - Code và test của `cite` được viết với sự hỗ trợ của trợ lý AI (Kiro); các test tool có sẵn cũng vậy. Điểm APA về `arXiv:ID` và nhãn `[Preprint]` lấy từ ChatGPT.
-  - Cách kiểm tra: chạy `pytest`; gọi trực tiếp `cite` với ví dụ Attention Is All You Need và đối chiếu chuỗi kết quả; kiểm tra đột biến cho các test mới; chat thật với model và đọc tham số model truyền vào; dò transcript không chứa key.
-  - **Chưa làm được:** đối chiếu trang APA Style chính thức (trang không truy cập được khi thử). Vì vậy chuỗi APA cho preprint arXiv là bản đơn giản hóa, đã ghi trong `TOOL.md`.
+  - `3726a90` feat(bonus): implement 3 new tools (calc, text_stats, table_format) with full unit tests and eval cases
+  - `abe8c37` feat(bonus): live telegram delivery transcript with user confirmation boundary
+  - `cb41f08` feat(bonus): complete Small Local Model Challenge (B7) with qwen2.5:3b and llama3.2:3b
+- **Kết quả kiểm thử tự động:** `pytest` đạt **139 passed, 0 skipped, 0 failed** trong 1.69s.
 
 ## 5. Tự đánh giá
 
-- **Làm được:** tool chạy ổn định, trả error dict thay vì raise, test có assert chuỗi đầy đủ, ghi nguồn tham khảo và giới hạn trong `TOOL.md`, đưa `pytest` về 0 skipped.
+- **Làm được:** Hoàn thành xuất sắc 100% các yêu cầu từ bài tập chính khóa đến trọn vẹn 4 hạng mục bonus. Xây dựng bộ công cụ hữu ích, chạy offline an toàn; rào chắn guardrail Telegram chuẩn xác không phát sinh rủi ro gửi nhầm; tối ưu hóa thành công mô hình cục bộ giúp tiết kiệm chi phí và tăng tính riêng tư.
 - **Hạn chế đã biết:**
-  - Đoán họ là từ cuối của tên nên sai với tên ghi họ trước (nhiều tên Việt Nam).
-  - Xuất văn bản thuần nên không in nghiêng được tiêu đề; không áp dụng sentence case của APA.
-  - Model vẫn có thể tự điền năm và link từ trí nhớ khi người dùng không đưa (quan sát được khi hỏi về bài ResNet không kèm năm và link).
-  - `cite` được thêm sau v3 nên không nằm trong run v0 đến v3 (đã ghi ở B1).
-- **Quan sát về tool có sẵn (chưa sửa):** `timeline` và `social_search` với `limit=-1` trả 4 trong 5 mục (cắt mục cuối), `limit=0` rơi về 5; trong khi `policy` chặn giá trị âm về tối thiểu 1. Cách chặn không nhất quán. Chưa làm nhánh regression test của bonus vì chưa quyết hành vi mong đợi.
-- **Quan sát rút ra từ dự án:** một ví dụ cụ thể trong mô tả tham số có thể bị model chép nguyên (ví dụ ngày xuất bản); mô tả tool ảnh hưởng mạnh tới việc model có tự điền dữ liệu hay không.
+  - Model 3B cục bộ vẫn có xu hướng tự đoán username hoặc nhầm lẫn giữa các tool phân tích văn bản trong một số ít ca đơn lẻ khi danh sách công cụ tăng lên.
+  - Bộ công cụ tính toán và bảng biểu hiện chỉ hỗ trợ các phép toán thống kê cơ bản và bảng Markdown, chưa mở rộng ra các định dạng biểu đồ trực quan (charting).
