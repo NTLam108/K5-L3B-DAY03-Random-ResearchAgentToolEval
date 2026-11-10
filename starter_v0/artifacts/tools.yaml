@@ -16,43 +16,65 @@
 tools:
   # ---------------- Core tools ----------------
   - name: clarify
-    description: "Gửi một câu hỏi cho người dùng."
+    description: >-
+      Ask the user one question and wait for their next message. No data is fetched.
+      USE when: a required argument is missing and not present anywhere in the conversation
+      — e.g. the user asks for "the latest tweets" without saying whose account and without a topic,
+      or says "this article / bài này" without a URL.
+      DO NOT use when: the conversation already contains the needed info (use it directly),
+      or the request is out of scope (just answer in text).
     parameters:
       type: object
       properties:
-        question: {type: string, default: "", description: "Câu hỏi"}
-        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời"}
-        options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn"}
+        question: {type: string, default: "", description: "One short, specific question in the user's language."}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "'text' = ask for missing info (account, URL, topic). 'yes_no' = a yes/no question. 'choice' = pick one of `options`."}
+        options: {type: array, default: [], items: {type: string}, description: "Only for response_type='choice': the list of options. Leave empty otherwise."}
       required: [question]
 
   - name: timeline
-    description: "Lấy các bài đăng gần đây."
+    description: >-
+      Get the most recent posts FROM ONE specific X/Twitter account.
+      USE when: the user names a person or account and wants what THEY posted
+      ("tweet của Sam Altman", "Elon Musk vừa đăng gì").
+      DO NOT use when: the user asks what people say ABOUT a topic (use social_search);
+      or no account is named — never guess an account, call clarify instead.
     parameters:
       type: object
       properties:
-        screenname: {type: string, default: "", description: "Tên tài khoản"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        screenname: {type: string, default: "", description: "Account handle WITHOUT '@'. Map well-known names to their handle, e.g. Sam Altman -> sama, Elon Musk -> elonmusk, Andrej Karpathy -> karpathy. Must not be empty."}
+        limit: {type: integer, default: 5, description: "Number of posts — use exactly the number the user asked for (latest correction wins); default 5 if not stated."}
       required: [screenname]
 
   - name: social_search
-    description: "Tìm trên mạng xã hội."
+    description: >-
+      Search X/Twitter posts ABOUT a topic or keyword, from any account.
+      USE when: the user explicitly wants posts/tweets/discussion on Twitter/X about a topic
+      ("mọi người đang bàn gì về GPT-5 trên Twitter", "tweet về AI").
+      DO NOT use when: the user wants posts from one specific account (use timeline);
+      the user asks for news / tin tức without mentioning Twitter/X (use lookup);
+      the user said to stop using Twitter; or there is no topic (query would be empty) — call clarify instead.
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Từ khóa"}
-        search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "Cách sắp xếp"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        query: {type: string, default: "", description: "Topic keywords only, e.g. 'GPT-5', 'AI', 'OpenAI'. Must not be empty."}
+        search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "'Top' when the user asks for popular / nổi bật / hot / most-engaged posts; 'Latest' when they ask for newest / mới nhất or don't specify."}
+        limit: {type: integer, default: 5, description: "Number of posts the user asked for; default 5."}
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: >-
+      Web search (news sites, blogs, general web) via Tavily.
+      USE when: the user asks for news / tin tức / what happened (today, this week…) or general information on the web.
+      This is the DEFAULT tool for "tin tức / news" unless the user explicitly asks for Twitter/X.
+      DO NOT use when: the user gives a concrete URL to read (use fetch);
+      the user wants tweets from an account (timeline) or tweets about a topic (social_search).
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
-        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
-        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
-        max_results: {type: integer, default: 5, description: "Số kết quả"}
+        query: {type: string, default: "", description: "Core topic keywords only, e.g. 'AI', 'robotics', 'OpenAI'. Do NOT add words like 'news', 'tin tức', 'today', 'hôm nay' — express those with topic and timeframe."}
+        topic: {type: string, enum: [general, news], default: "general", description: "'news' when the user asks for news / tin tức / current events; 'general' for background or reference lookups."}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "day = today / hôm nay / last 24h; week = this week / tuần này; month = this month; year = this year. Keep the timeframe from earlier turns unless the user changes it."}
+        max_results: {type: integer, default: 5, description: "Number of results; default 5."}
       required: [query]
 
   - name: fetch

@@ -1,0 +1,5 @@
+# Keep eval artifacts byte-stable across OSes so prompt_hash / tools_hash
+# in version_log.csv match the files that were actually evaluated.
+starter_v0/artifacts/*.md   text eol=lf
+starter_v0/artifacts/*.yaml text eol=lf
+starter_v0/artifacts/*.csv  text eol=lf
