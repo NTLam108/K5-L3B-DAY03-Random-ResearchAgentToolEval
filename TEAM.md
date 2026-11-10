@@ -75,14 +75,21 @@ Ví dụ: `report/team/20241234_NguyenVanAn.md`.
 
 ## Trịnh Hưng Thịnh - 2A202603907
 
-### Phần việc phụ trách
+## Phần việc phụ trách
 
-- UI (Streamlit/Vercel) + link dùng thử; chat live ≥ 3 lượt và transcript; `group_report.md`.
+UI (Streamlit/Vercel) + link dùng thử; chat live ≥ 3 lượt và transcript; `group_report.md`.
 
-### Đóng góp cụ thể
+## Đóng góp cụ thể
 
--
+- Xây dựng giao diện chat bằng Streamlit trong `starter_v0/app.py`, kết nối với provider và tool loop sẵn có của agent; hỗ trợ hội thoại nhiều lượt và cấu hình provider, version, model.
+- Hiển thị danh sách tool/schema, đối số agent gửi, kết quả trả về và lỗi tool; lưu các lượt chat vào `starter_v0/transcripts/`.
+- Thêm Streamlit vào `starter_v0/requirements.txt`; cập nhật `group_report.md` với hướng dẫn chạy UI, danh sách tool và câu hỏi mẫu.
+- Phần cần bổ sung trước khi nộp: chạy chat thật ít nhất 3 lượt để tạo transcript và triển khai UI để có link dùng thử public.
 
-### Bằng chứng
+## Bằng chứng
 
--
+- File: [`starter_v0/app.py`](../../starter_v0/app.py), [`starter_v0/requirements.txt`](../../starter_v0/requirements.txt), [`report/team/group_report.md`](group_report.md).
+- Kiểm tra: `python -m py_compile starter_v0/app.py` và `git diff --check` đều hoàn tất không báo lỗi.
+- Transcript ≥ 3 lượt, link deploy public và commit/PR chưa được ghi nhận trong workspace.
+- Công cụ hỗ trợ: Codex; tự kiểm tra bằng cách rà lại cú pháp Python và diff sau khi sửa.
+
