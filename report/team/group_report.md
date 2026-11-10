@@ -16,19 +16,21 @@
 
 ### A1. Agent này làm được gì
 
-> 1–2 câu mô tả agent dùng để làm gì (cho team khác hiểu nhanh).
+Research agent: tìm tin tức trên web, bài đăng X/Twitter (theo tài khoản hoặc theo chủ đề), đọc nội dung một URL, tìm paper trên arXiv, tra chính sách nội bộ, trình bày digest và tạo trích dẫn APA/BibTeX. Agent hỏi lại khi thiếu thông tin và không gửi gì ra ngoài khi chưa được xác nhận.
 
-Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc URL, tổng hợp thành digest, và gửi lên Telegram khi được xác nhận."
+**Cách chạy UI** (trang web có cảnh 3D Three.js: lõi agent ở giữa, mỗi tool là một đồ vật thật quay quanh, tool nào được gọi thì sáng lên; panel chat hiện đầy đủ `args` và `result` của từng lần gọi tool, kể cả khi tool lỗi):
 
-**Cách chạy UI:**
+```bash
+cd starter_v0
+python web_server.py --provider openrouter --version v3     # mở http://127.0.0.1:8000
+```
 
-> Lệnh chạy UI (ví dụ `streamlit run app.py`) và dependency đã thêm vào `starter_v0/requirements.txt`.
+- Cần file `.env` có key (xem `docs/TOOL-SETUP.md`). Server là thư viện chuẩn của Python nên **không thêm dependency nào vào `requirements.txt`**; Three.js được tải từ CDN (cần mạng để thấy cảnh 3D, không có mạng thì chat vẫn dùng được).
+- Mã nguồn: `starter_v0/web_server.py`, `starter_v0/web/`, test: `starter_v0/tests/test_web_server.py`. Mô hình 3D và ánh sáng lấy từ Poly Haven (CC0), xem `starter_v0/web/assets/CREDITS.md`.
 
 **Link dùng thử (deploy):**
 
-> Dán link public để team khác mở thử ngay. Cách deploy nhanh bằng Cloudflare Tunnel xem README. Nếu deploy Vercel/Streamlit Cloud thì dán link đó.
->
-> URL:
+> URL: **chưa có link public** (nhóm chưa chạy tunnel/deploy). Để chia sẻ: giữ server chạy rồi chạy `cloudflared tunnel --url http://localhost:8000`, sau đó dán link vào đây. Server giới hạn 20 request chat mỗi phút (`--max-per-minute`) để người ngoài không đốt hết quota API.
 
 ### A2. Tool agent có
 
@@ -36,23 +38,35 @@ Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc 
 
 | Tên tool | Làm được gì | Tool mới nhóm thêm? |
 |---|---|---|
-| clarify | hỏi lại người dùng khi thiếu thông tin | không |
+| clarify | hỏi lại người dùng khi thiếu thông tin hoặc xin xác nhận (`text`, `yes_no`, `choice`) | không |
+| timeline | lấy các bài đăng gần đây của một tài khoản X/Twitter (RapidAPI) | không |
+| social_search | tìm bài đăng X/Twitter theo từ khóa, `Latest` hoặc `Top` (RapidAPI) | không |
+| lookup | tìm trên web, `topic` general/news và `timeframe` (Tavily) | không |
+| fetch | đọc nội dung một URL cụ thể (Firecrawl) | không |
+| format | trình bày các item đã có thành digest markdown | không |
+| send | gửi text lên Telegram, chỉ gửi khi `confirmed=true` | không |
+| policy | tìm trong chính sách nội bộ (markdown) | không |
+| papers | tìm paper trên arXiv | không |
+| paper_text | tải PDF arXiv và trích text | không |
 | cite | tạo trích dẫn APA hoặc BibTeX từ metadata một bài báo (title, authors, published, url); chạy local, không cần API key | có |
-|  |  |  |
 
 ### A3. Câu hỏi mẫu để thử
 
 > 3–5 câu hỏi/yêu cầu mẫu để team khác tự thử agent ngay.
 
-1.
-2.
-3.
+1. `Tin tức AI hôm nay có gì nổi bật?` (kỳ vọng: `lookup`, `topic=news`, `timeframe=day`)
+2. `Tóm tắt 5 tweet mới nhất giúp mình` → agent hỏi lại tài khoản → `Của Sam Altman nhé` (kỳ vọng: hỏi lại, rồi `timeline(sama, 5)`)
+3. `Tìm bài báo mới về AI agent evaluation trên arXiv` (kỳ vọng: `papers`)
+4. `Cho mình citation APA của bài 'Attention Is All You Need' của Ashish Vaswani, Noam Shazeer, năm 2017` (kỳ vọng: `cite`)
+5. `Đăng bản tin này lên Telegram giúp mình` (kỳ vọng: không gửi ngay, hỏi lại; xem B4 để biết hành vi thực tế còn một lỗi)
 
 ## 3. Giải pháp
 
-> Tóm tắt các thay đổi chính trong `starter_v0/artifacts/system_prompt.md` và `starter_v0/artifacts/tools.yaml`, và tool mới nhóm viết (tên, làm gì, khi nào agent nên gọi).
-
--
+- **v1, `system_prompt.md`:** bỏ các chỉ dẫn xấu của starter (đoán thay vì hỏi, gửi ngay không xác nhận, ép làm một bước), thêm rule phạm vi, rule hỏi lại bằng `clarify` khi thiếu tài khoản/URL, rule routing và boundary xác nhận trước khi `send`. `case_accuracy` 0.65 → 0.80.
+- **v2, `tools.yaml`:** viết lại mô tả `clarify`, `timeline`, `social_search`, `lookup` với "khi nào dùng / không dùng" và quy ước tham số. 0.80 → 0.95 (routing 1.0, multi-turn 1.0).
+- **v3, `tools.yaml`:** thêm boundary xác nhận cho `clarify` và `send`. Điểm không đổi (0.95); R12 vẫn sai `response_type` (xem B1 và mục 7).
+- **Tool mới `cite`:** tạo trích dẫn APA/BibTeX từ metadata bài báo, chạy local. Agent nên gọi khi người dùng xin citation của một paper cụ thể (thường sau `papers`); không dùng để tìm paper hay trình bày bản tin. `cite` được thêm sau v3 nên **không nằm trong run v0–v3**; run `--suite group` (10 case, trong đó 2 case route tới `cite`) đã chạy với tool này.
+- **UI:** trang web Three.js + server Python dùng lại vòng lặp tool của `chat.py` (xem A1 và B5a).
 
 ## 4. Kết quả — PHẦN B: Chi tiết và bằng chứng
 
@@ -162,11 +176,24 @@ Liệt kê đúng 10 case trong `starter_v0/data/eval_group.json` (5 single turn
 
 ### B4. Live Chat Evidence
 
-Lấy từ `starter_v0/transcripts/*.transcript.json`.
+Lấy từ `starter_v0/transcripts/*.transcript.json`. **Cách tạo transcript (nói rõ để người chấm biết):**
+- 4 file `v3-cite_web_openrouter_20261111T00*.transcript.json` được tạo bằng cách một script gửi câu hỏi tới API `/api/chat` của UI web (server `web_server.py --version v3-cite`, model thật `openrouter / openai/gpt-4o-mini`, tool gọi API thật). Đây là chat thật với model thật nhưng **không phải gõ tay trong trình duyệt**.
+- File `v3_openrouter_20261110T190906181009.transcript.json` là chat tương tác bằng `chat.py` (4 lượt, người dùng gõ).
+- Artifact của các lần chat web là `v3-cite+p9b882949c50b+tbb55ba45624e` (tức v3 cộng tool `cite`, `tools_hash` khác v3 gốc). Không gửi gì lên Telegram thật trong các lần chat này.
 
 | Turn | User Request | Tool Calls | Version Evidence | Outcome |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| Thường | `Tin tức AI hôm nay có gì nổi bật?` | `lookup(query="AI", topic="news", timeframe="day", max_results=5)` | `v3-cite_web_openrouter_20261111T004958950590` | Đúng tool và args; trả tóm tắt 5 tin có link. Agent trả lời bằng tiếng Anh dù câu hỏi tiếng Việt |
+| Thiếu info, lượt 1 | `Tóm tắt 5 tweet mới nhất giúp mình` | không gọi tool | `v3-cite_web_openrouter_20261111T005009308788` | Không đoán tài khoản (đúng), nhưng hỏi lại bằng văn bản thường, **không gọi tool `clarify`** |
+| Thiếu info, lượt 2 | `Của Sam Altman nhé` | `timeline(screenname="sama", limit=5)` | cùng file trên | Dùng được thông tin bổ sung, đúng handle và limit; trả tóm tắt 5 tweet |
+| Gửi/đăng, lượt 1 | `Đăng bản tin này lên Telegram giúp mình` | `clarify(question="Bạn muốn đăng nội dung gì lên Telegram?", response_type="text")` | `v3-cite_web_openrouter_20261111T005020368434` | **Không gửi** (boundary giữ được), nhưng hỏi nội dung bằng `text` thay vì xin xác nhận `yes_no` — đây là lỗi R12 còn lại sau v3 |
+| Gửi/đăng, lượt 2 | `Thôi, đừng đăng nữa` | không gọi tool | cùng file trên | Tôn trọng việc hủy, không gọi `send` |
+| Tool mới | `Cho mình citation APA của bài 'Attention Is All You Need' của Ashish Vaswani, Noam Shazeer, năm 2017` | `cite(title, authors=[2 tác giả], published="2017")` | `v3-cite_web_openrouter_20261111T005023452246` | Đúng tool; kết quả `Vaswani, A., & Shazeer, N. (2017). Attention Is All You Need.` Agent trả lời bằng tiếng Anh |
+| chat.py, lượt 1 | `Cho mình citation APA của bài 'Attention Is All You Need' của Ashish Vaswani, năm 2017` | `cite(...)` | `v3_openrouter_20261110T190906181009` | Đúng tool |
+| chat.py, lượt 2 | yêu cầu citation nhưng không nêu bài báo nào | `clarify(...)` | cùng file trên | Hỏi lại tiêu đề và tác giả bằng tool `clarify` |
+| chat.py, lượt 3–4 | `bài báo nào bạn cũng tìm được đúngk`; `bạn tìm một bài báo việt nam đi` | lượt 3: không; lượt 4: `papers(query="Vietnam", max_results=1)` | cùng file trên | Lượt 4 trả 1 paper; query chỉ là "Vietnam" nên kết quả khá rộng |
+
+Quan sát chung: agent hay trả lời bằng tiếng Anh khi người dùng hỏi tiếng Việt (prompt chưa có rule về ngôn ngữ trả lời); hành vi hỏi lại không nhất quán giữa tool `clarify` và văn bản thường.
 
 ### B5a. Required Evidence — Tool mới, unit test, UI
 
@@ -174,7 +201,7 @@ Lấy từ `starter_v0/transcripts/*.transcript.json`.
 |---|---|---|---|
 | Tool mới (`tools/<tên>/`) | `starter_v0/tools/cite/tool.py`, `starter_v0/tools/cite/TOOL.md`, khai báo trong `starter_v0/artifacts/tools.yaml`, đăng ký trong `starter_v0/tools/__init__.py` | Tạo trích dẫn APA/BibTeX từ metadata (khớp field của output `papers`); ghi nguồn và giới hạn trong `TOOL.md` | Tool chỉ nhận metadata, không tự kiểm chứng paper; heuristic "từ cuối là họ" sai với tên ghi họ trước; không in nghiêng, không sentence case; chưa xác nhận `arXiv:ID`/`[Preprint]` với trang APA chính thức |
 | Unit test tool mới (≥ 3 test/tool) | `pytest` output: 80 passed, 17 skipped, 0 failed (`starter_v0/tests/test_tools_todo.py`, 13 test cho `cite`) | Test offline, có assert chuỗi đầy đủ; input xấu trả error dict, không raise | 17 skip là stub của tool có sẵn |
-| UI (lệnh chạy + link dùng thử) |  |  |  |
+| UI (lệnh chạy + link dùng thử) | `starter_v0/web_server.py`, `starter_v0/web/`, `starter_v0/tests/test_web_server.py` (17 test offline); lệnh chạy ở A1; transcript ở B4; chưa có link public | Chat nhiều lượt, thẻ tool hiện đủ `args`/`result` và đánh dấu lỗi; lỗi provider hiện thẳng cho người dùng; cảnh 3D phản ánh tool đang được gọi | Giới hạn 20 request/phút và chỉ lắng nghe `127.0.0.1` theo mặc định; key bị che nếu lỡ lọt vào thông báo lỗi; cảnh 3D cần mạng để tải Three.js từ CDN; mới thử trên Firefox; chưa deploy |
 
 Tool unit tests: số test đã viết, và một ví dụ lỗi mà unit test bắt được nhưng eval không bắt được.
 
@@ -238,4 +265,13 @@ Chi tiết đóng góp của từng thành viên nằm trong [TEAM.md](../../TEA
 
 ## 8. Tài liệu tham khảo
 
--
+- Đề bài và hướng dẫn của lab: `README.md`, `RUBRIC.md`, `docs/TOOL-SETUP.md`.
+- Poly Haven, giấy phép CC0 và nguồn mô hình 3D/HDRI: https://polyhaven.com/license (danh sách asset ở `starter_v0/web/assets/CREDITS.md`).
+- Three.js (MIT), tải từ CDN: https://threejs.org
+- BibTeX (định dạng `@misc`, tên tác giả nối bằng `and`): https://www.bibtex.org/Format/
+- APA 7 cho tool `cite` (hướng dẫn thư viện đại học; **chưa đối chiếu được trang APA Style chính thức**):
+  - https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/reference_list_author_authors.html
+  - https://libguides.wintec.ac.nz/APA7/multiauthors
+  - https://library.carleton.ca/help/apa-citation-style/reference-list/reference-components
+  - https://library.rgu.ac.uk/apa-referencing/pre-print-post-print
+- Việc "không cần `arXiv:ID` và `[Preprint]` trong APA 7" là thông tin do ChatGPT cung cấp, nhóm chưa tự đối chiếu với trang chính thức (xem `starter_v0/tools/cite/TOOL.md`).
