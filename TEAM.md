@@ -65,12 +65,12 @@ Mỗi thành viên nộp một báo cáo cá nhân trong `report/team/`:
   + Bonus 2 (2 pts): Gửi Telegram thật sau xác nhận kèm transcript.
   + Bonus 3 (3 pts): ≥ 4 Custom Tools offline kèm unit tests và extension evals.
   + Bonus 4 (4 pts): Small Local Model Challenge (Ollama local, 2 models 3B, 2 vòng tối ưu prompt, phân tích B7).
-- Duy trì và nâng cấp toàn bộ test suite đạt **139 passed, 0 skipped, 0 failed**.
+- Duy trì và nâng cấp toàn bộ test suite đạt **143 passed, 0 skipped, 0 failed**.
 
 ### Đóng góp cụ thể
 
-- Viết 4 công cụ offline an toàn: `cite` (trích dẫn APA/BibTeX), `calc` (tính toán an toàn qua AST), `text_stats` (phân tích từ và chỉ số Flesch), `table_format` (tạo bảng Markdown).
-- Viết 26 unit tests cho 4 tool mới và 14 unit tests lấp đầy các stubs cho các tool có sẵn trong `tests/test_tools_todo.py`.
+- Viết 4 công cụ offline an toàn: `cite` (trích dẫn APA/BibTeX), `calc` (tính toán an toàn qua AST), `text_stats` (phân tích từ và chỉ số Flesch), `table_format` (tạo bảng Markdown). Khắc phục lỗi bảo mật DoS trong `calc` qua rào chắn lũy thừa và kích thước danh sách, bổ sung 4 test hồi quy.
+- Viết 30 unit tests cho 4 tool mới và 14 unit tests lấp đầy các stubs cho các tool có sẵn trong `tests/test_tools_todo.py`.
 - Tích hợp gửi thật lên Telegram Bot qua chat ID `5701163375`, ghi transcript bảo vệ xác nhận người dùng.
 - Triển khai Ollama offline, benchmark `qwen2.5:3b` và `llama3.2:3b`, viết prompt rút gọn `system_prompt_local.md` nâng độ chính xác của Qwen 3B từ 55% lên 75% (multiturn đạt 100%).
 - Hoàn thiện toàn bộ số liệu và phân tích mục B5, B5a, B7 trong `report/team/group_report.md`.
@@ -78,9 +78,9 @@ Mỗi thành viên nộp một báo cáo cá nhân trong `report/team/`:
 ### Bằng chứng
 
 - File: `starter_v0/tools/cite/`, `starter_v0/tools/calc/`, `starter_v0/tools/text_stats/`, `starter_v0/tools/table_format/`, `starter_v0/tests/test_tools_todo.py`.
-- Runs & transcripts: `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json`, 4 runs Ollama local (`v3-qwen3b`, `v3-llama3b`, `v4-local`, `v5-local`).
-- Test suite: `pytest` đạt 139 passed, 0 skipped, 0 failed.
-- Commit (jay <trangiabao433@gmail.com>): `a39b590`, `7ffea6b`, `3726a90`, `abe8c37`, `cb41f08`.
+- Runs & transcripts: `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json`, 4 runs Ollama local (`v3-qwen3b`, `v3-llama3b`, `v4-local`, `v5-local`), 3 runs hardening trên bộ 14 tools (`v3-14tools` base + extension, `v5-local-cloud`).
+- Test suite: `pytest` đạt 143 passed, 0 skipped, 0 failed.
+- Commit (jay <trangiabao433@gmail.com>): `a39b590`, `7ffea6b`, `3726a90`, `abe8c37`, `cb41f08`, `5a4449c`.
 
 ---
 
