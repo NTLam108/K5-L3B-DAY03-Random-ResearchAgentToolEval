@@ -78,7 +78,7 @@ Mỗi thành viên nộp một báo cáo cá nhân trong `report/team/`:
 ### Bằng chứng
 
 - File: `starter_v0/tools/cite/`, `starter_v0/tools/calc/`, `starter_v0/tools/text_stats/`, `starter_v0/tools/table_format/`, `starter_v0/tests/test_tools_todo.py`.
-- Runs, transcripts & ảnh: `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json`, ảnh `report/team/telegram_evidence.jpg`, 4 runs Ollama local (`v3-qwen3b`, `v3-llama3b`, `v4-local`, `v5-local`), 3 runs hardening trên bộ 14 tools (`v3-14tools` base + extension, `v5-local-cloud`).
+- Runs, transcripts & ảnh: `starter_v0/transcripts/v3-telegram_web_openrouter_20261111T025448773216.transcript.json`, ảnh kênh `report/team/telegram_channel_evidence.jpg`, 4 runs Ollama local (`v3-qwen3b`, `v3-llama3b`, `v4-local`, `v5-local`), 3 runs hardening trên bộ 14 tools (`v3-14tools` base + extension, `v5-local-cloud`).
 - Test suite: `pytest` đạt 143 passed, 0 skipped, 0 failed.
 - Commit (jay <trangiabao433@gmail.com>): `a39b590`, `7ffea6b`, `3726a90`, `abe8c37`, `cb41f08`, `5a4449c`.
 

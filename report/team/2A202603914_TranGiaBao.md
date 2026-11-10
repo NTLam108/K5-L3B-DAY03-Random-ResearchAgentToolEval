@@ -28,8 +28,8 @@
 ### 2. Gửi Telegram vào Private Channel sau xác nhận (Bonus 2)
 - Khởi tạo Telegram Bot (`@random20k_bot`) và cấp quyền quản trị viên (Admin) vào kênh riêng tư (Private Channel) của nhóm (`Random`, Chat ID: `-1004489921806`).
 - Kiểm tra ranh giới an toàn: lượt 1 người dùng yêu cầu đăng tin -> Agent gọi `clarify(response_type="yes_no")` để xin xác nhận; lượt 2 sau khi người dùng đồng ý tường minh -> Agent mới gọi `send(confirmed=True)` và gửi tin nhắn thật lên kênh Telegram qua Bot API.
-- Xuất file transcript bằng chứng: `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json`.
-- Đính kèm ảnh chụp màn hình nhận tin thực tế trong kênh: `report/team/telegram_evidence.jpg`.
+- Transcript bằng chứng (phiên 02:54, sau khi kênh được tạo): `starter_v0/transcripts/v3-telegram_web_openrouter_20261111T025448773216.transcript.json` (lượt 1 `clarify(yes_no)`, lượt 2 `send(confirmed=true)` → `sent`). Transcript lần thử đầu `v3_telegram_real_openrouter_20261111T013500.transcript.json` (01:35) diễn ra trước khi có kênh, tin khi đó gửi vào cuộc trò chuyện riêng với bot nên không dùng làm bằng chứng cho kênh.
+- Ảnh chụp kênh riêng tư `Random` (2 người đăng ký, các tin bot đăng lúc 02:38): `report/team/telegram_channel_evidence.jpg`; ảnh chat riêng với bot của lần thử đầu: `report/team/telegram_bot_chat_evidence.jpg`.
 
 ### 3. Small Local Model Challenge (Bonus 4)
 - Cài đặt Ollama nhị phân vào `~/.local/bin/ollama` (không cần sudo), cấu hình chạy ngầm `ollama serve` (port 11434).
@@ -46,8 +46,8 @@
   - `starter_v0/tests/test_tools_todo.py`, `starter_v0/data/eval_research_extension.json`.
   - `starter_v0/artifacts/system_prompt_local.md`, `starter_v0/artifacts/version_log.csv`.
 - **File run, transcript và ảnh bằng chứng:**
-  - `starter_v0/transcripts/v3_telegram_real_openrouter_20261111T013500.transcript.json` (phiên tương tác gửi Telegram sau xác nhận).
-  - `report/team/telegram_evidence.jpg` (ảnh chụp màn hình Telegram nhận tin thật từ bot).
+  - `starter_v0/transcripts/v3-telegram_web_openrouter_20261111T025448773216.transcript.json` (phiên gửi Telegram vào kênh sau xác nhận).
+  - `report/team/telegram_channel_evidence.jpg` (ảnh chụp kênh riêng tư `Random` với các tin do bot đăng).
   - Các file run local và cloud trên bộ 14 tools:
     + `starter_v0/runs/v3-qwen3b_B_base_ollama_20261111T014257117342.json`
     + `starter_v0/runs/v3-llama3b_B_base_ollama_20261111T014442478093.json`
