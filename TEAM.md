@@ -13,7 +13,7 @@
 | --: | ------ | ---- | ----- | ------ | ------- |
 |   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 |  |  | Setup, baseline v0 + phân tích lỗi, vòng v1 |
 |   2 | Trần Gia Bảo | 2A202603914 |  |  | Tool mới (`tool.py`, `TOOL.md`, đăng ký) + unit test |
-|   3 | Hiếu (cập nhật họ tên đầy đủ) | 2A202603860 |  |  | 10 case eval nhóm, vòng v2/v3 |
+|   3 | Vũ Xuân Hiếu | 2A202603860 | vuhieu3205@gmail.com | vuhieuvh | 10 case eval nhóm, vòng v2/v3 |
 |   4 | Trịnh Hưng Thịnh | 2A202603907 |  |  | UI, chat live + transcript, báo cáo nhóm |
 
 ## Cá nhân
@@ -54,7 +54,7 @@ Ví dụ: `report/team/20241234_NguyenVanAn.md`.
 
 -
 
-## Hiếu - 2A202603860
+## Vũ Xuân Hiếu - 2A202603860
 
 ### Phần việc phụ trách
 
