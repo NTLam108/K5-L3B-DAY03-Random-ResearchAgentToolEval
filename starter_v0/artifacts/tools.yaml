@@ -154,13 +154,13 @@ tools:
 
   # ---------------- Team tools ----------------
   - name: cite
-    description: "Tạo trích dẫn APA hoặc BibTeX từ metadata của một bài báo đã biết (title, authors, published, url). Dùng khi người dùng xin citation/tài liệu tham khảo của một paper cụ thể, thường sau khi đã có kết quả từ papers. KHÔNG dùng để tìm paper (dùng papers), không dùng để trình bày bản tin (dùng format), và không gọi khi chưa có đủ title và authors (hỏi lại bằng clarify)."
+    description: "Tạo trích dẫn APA hoặc BibTeX từ metadata của một bài báo đã biết (title, authors, published, url). Dùng khi người dùng xin citation/tài liệu tham khảo của một paper cụ thể, thường sau khi đã có kết quả từ papers. KHÔNG dùng để tìm paper (dùng papers), không dùng để trình bày bản tin (dùng format), và không gọi khi chưa có title (hỏi lại bằng clarify)."
     parameters:
       type: object
       properties:
         title: {type: string, default: "", description: "Tiêu đề bài báo, không rỗng"}
-        authors: {type: array, default: [], items: {type: string}, description: "Danh sách tên tác giả theo thứ tự nguồn, dạng 'Tên Họ' (ví dụ 'Ashish Vaswani'); từ cuối được coi là họ; tối đa 20 tác giả"}
+        authors: {type: array, default: [], items: {type: string}, description: "Danh sách tên tác giả theo thứ tự nguồn, dạng 'Tên Họ' (ví dụ 'Ashish Vaswani'); từ cuối được coi là họ; để trống [] nếu không có tác giả"}
         published: {type: string, default: "", description: "Ngày xuất bản dạng chuỗi (ví dụ '2017-06-12T17:57:34Z'); lấy 4 chữ số đầu làm năm"}
         url: {type: string, default: "", description: "Địa chỉ bài báo, ví dụ link arXiv"}
         style: {type: string, enum: [apa, bibtex], default: "apa", description: "Chuẩn trích dẫn: apa (mặc định) hoặc bibtex"}
-      required: [title, authors]
+      required: [title]

@@ -170,7 +170,7 @@ def test_cite_bibtex_builds_key_and_joins_authors_with_and() -> None:
     assert result["citation"] == (
         "@misc{vaswani2017,\n"
         "  title = {Attention Is All You Need},\n"
-        "  author = {Ashish Vaswani and Noam Shazeer},\n"
+        "  author = {Vaswani, Ashish and Shazeer, Noam},\n"
         "  year = {2017},\n"
         "  url = {" + ARXIV_URL + "}\n"
         "}"
@@ -190,9 +190,16 @@ def test_cite_authors_wrong_type_returns_error_dict_not_raise() -> None:
     assert "authors" in result["message"]
 
 
-def test_cite_empty_authors_list_returns_error_dict() -> None:
-    assert cite_tool(title="Notes", authors=[])["error"] == "TypeError"
-    assert cite_tool(title="Notes")["error"] == "TypeError"
+def test_cite_apa_without_authors_moves_title_to_author_position() -> None:
+    for no_authors in ([], None):
+        result = cite_tool(title="Notes on engines", authors=no_authors, published="1843")
+        assert result["citation"] == "Notes on engines. (1843)."
+
+
+def test_cite_bibtex_without_authors_omits_author_field() -> None:
+    result = cite_tool(title="Notes", authors=[], published="1843", style="bibtex")
+    assert result["citation"].startswith("@misc{anon1843,")
+    assert "author" not in result["citation"]
 
 
 def test_cite_unknown_style_returns_error_dict() -> None:
@@ -201,7 +208,22 @@ def test_cite_unknown_style_returns_error_dict() -> None:
     assert "apa" in result["message"]
 
 
-def test_cite_more_than_20_authors_returns_error_dict() -> None:
-    result = cite_tool(title="Big paper", authors=[f"Person{i} Name{i}" for i in range(21)])
-    assert result["error"] == "ValueError"
-    assert "too many authors" in result["message"]
+def test_cite_apa_21_or_more_authors_lists_first_19_ellipsis_and_last() -> None:
+    authors = [f"Given{i} Surname{i}" for i in range(25)]
+    citation = cite_tool(title="Big paper", authors=authors)["citation"]
+    assert citation.startswith("Surname0, G., Surname1, G.")
+    assert "Surname18, G., ... Surname24, G. (n.d.)." in citation
+    assert "Surname19" not in citation
+    assert "&" not in citation
+
+
+def test_cite_apa_exactly_20_authors_lists_all_with_ampersand() -> None:
+    authors = [f"Given{i} Surname{i}" for i in range(20)]
+    citation = cite_tool(title="Big paper", authors=authors)["citation"]
+    assert ", & Surname19, G." in citation
+    assert "..." not in citation
+
+
+def test_cite_bibtex_key_keeps_only_letters_and_digits() -> None:
+    result = cite_tool(title="Notes", authors=["Jean O'Neil-Smith"], published="2020", style="bibtex")
+    assert result["citation"].startswith("@misc{oneilsmith2020,")
