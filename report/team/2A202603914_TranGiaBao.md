@@ -14,7 +14,7 @@
   2. **Bonus 2 (2 điểm) — Live Telegram Action:** Cấu hình bot Telegram, liên kết Private Channel của nhóm (`Random`), kiểm tra ranh giới an toàn (`clarify(yes_no)` trước khi `send(confirmed=true)`), thực hiện gửi tin nhắn thật và lưu transcript cùng ảnh chụp màn hình bằng chứng.
   3. **Bonus 3 (3 điểm) — ≥ 4 Custom Tools:** Viết 4 công cụ offline hữu ích, bổ sung bộ ca kiểm thử mở rộng `eval_research_extension.json` (E11, E12, E13) và bộ unit test chặt chẽ.
   4. **Bonus 4 (4 điểm) — Small Local Model Challenge:** Triển khai hạ tầng mô hình nhỏ cục bộ (Ollama), benchmark 2 model 3B (`qwen2.5:3b` và `llama3.2:3b`), tối ưu prompt `system_prompt_local.md` (`v4-local`, `v5-local`), và đóng góp số liệu phân tích mục B7 trong báo cáo nhóm.
-- Duy trì và nâng cấp toàn bộ test suite đạt **143 passed, 0 skipped, 0 failed**.
+- Duy trì và nâng cấp toàn bộ test suite đạt **146 passed, 0 skipped, 0 failed**.
 
 ## 3. Đóng góp cụ thể
 
@@ -23,7 +23,8 @@
 - **Tool `calc` (`starter_v0/tools/calc/`):** Công cụ tính toán biểu thức số học và thống kê (mean, median, stdev, min, max, sum) an toàn bằng cây cú pháp trừu tượng (Python AST). Chặn toàn bộ truy cập thuộc tính nguy hiểm. Trong phiên rà soát nhóm, đã khắc phục rủi ro DoS từ lũy thừa khổng lồ (`10**10**10`) và nhân mảng lớn (`[0]*10**9`) qua việc chặn kết quả ước tính quá 10.000 bit và giới hạn 500 ký tự; kèm 9 unit tests (5 test gốc + 4 test hồi quy).
 - **Tool `text_stats` (`starter_v0/tools/text_stats/`):** Phân tích thống kê văn bản: đếm từ, ký tự, số câu, ước tính thời gian đọc và tính chỉ số độ dễ đọc Flesch Reading Ease; kèm 4 unit tests.
 - **Tool `table_format` (`starter_v0/tools/table_format/`):** Chuyển đổi dữ liệu có cấu trúc thành Markdown Table chuẩn, hỗ trợ căn lề từng cột (`left`, `center`, `right`), tự động cân bằng số cột; kèm 4 unit tests.
-- **Test Challenge:** Điền 14 stub test còn thiếu cho các tool có sẵn (`clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy`), đưa test suite lên **143 passed, 0 skipped, 0 failed**.
+- **Sửa lỗi tool `send` (regression):** ảnh Telegram cho thấy tên như `send_telegram` hiện thành "sendtelegram" vì `parse_mode: Markdown`; đã escape dấu gạch dưới giữa chữ, gửi lại văn bản thuần khi Telegram trả HTTP 400, kèm 3 test hồi quy (chưa kiểm tra lại trực tiếp trên Telegram).
+- **Test Challenge:** Điền 14 stub test còn thiếu cho các tool có sẵn (`clarify`, `format`, `send`, `lookup`, `fetch`, `timeline`, `social_search`, `policy`), đưa test suite lên **146 passed, 0 skipped, 0 failed**.
 
 ### 2. Gửi Telegram vào Private Channel sau xác nhận (Bonus 2)
 - Khởi tạo Telegram Bot (`@random20k_bot`) và cấp quyền quản trị viên (Admin) vào kênh riêng tư (Private Channel) của nhóm (`Random`, Chat ID: `-1004489921806`).
@@ -63,14 +64,15 @@
   - `abe8c37` feat(bonus): live telegram delivery transcript with user confirmation boundary
   - `cb41f08` feat(bonus): complete Small Local Model Challenge (B7) with qwen2.5:3b and llama3.2:3b
   - `5a4449c` Bonus hardening: cap calc pow/list/length, cloud evals on 14 tools, v5-local on cloud, rewrite B7 with measured data
-- **Kết quả kiểm thử tự động:** `pytest` đạt **143 passed, 0 skipped, 0 failed** trong 1.64s.
+- **Kết quả kiểm thử tự động:** `pytest` đạt **146 passed, 0 skipped, 0 failed** trong 1.64s.
 - **AI/công cụ đã dùng và cách tự kiểm tra kết quả:**
   - *Công cụ AI:* Sử dụng trợ lý AI (Kiro) để hỗ trợ:
     + Viết mã nguồn và test cho tool `cite` (trích dẫn APA và BibTeX).
     + Điền 14 test stubs cho các tool có sẵn trong `tests/test_tools_todo.py`.
     + Sinh khung phân tích AST cho tool `calc`, thuật toán đếm âm tiết Flesch cho `text_stats`, và bộ dựng bảng Markdown cho `table_format`.
+  - *Công cụ AI thứ hai:* ChatGPT, dùng để tra cứu và xác nhận hai điểm APA 7 cho tool `cite` (không cần mã `arXiv:ID` riêng, không cần nhãn `[Preprint]`). Kết quả này **chưa được đối chiếu lại với trang APA Style chính thức** (trang không truy cập được khi thử), nên được ghi là thông tin chưa kiểm chứng trong `starter_v0/tools/cite/TOOL.md` và mục 8 của báo cáo nhóm.
   - *Cách tự kiểm tra của cá nhân:*
-    + Chạy `pytest` toàn bộ 143 test cases offline, đảm bảo không có test nào bị skip hay lỗi.
+    + Chạy `pytest` toàn bộ 146 test cases offline, đảm bảo không có test nào bị skip hay lỗi.
     + Thử nghiệm gọi tool trực tiếp với các giá trị đầu vào sai kiểu dữ liệu để chắc chắn tool trả error dict mà không làm sập chương trình.
     + Kiểm tra kỹ file `.env`, file run và transcript để đảm bảo không rò rỉ token Telegram hay API key bí mật vào git.
   - *Rà soát và củng cố bảo mật (do đồng đội thực hiện trong phiên hardening):*
@@ -82,7 +84,7 @@
 - **Làm được:**
   - Viết 4 tool mới hoàn toàn (`cite`, `calc`, `text_stats`, `table_format`) chạy offline, tuân thủ đúng tool contract (trả error dict khi input sai, không raise exception).
   - Khắc phục lỗ hổng bảo mật DoS trong `calc` bằng các rào chắn độ dài và kích thước số mũ, bổ sung 4 test hồi quy bảo vệ.
-  - Hoàn thành bộ test challenge, đưa toàn bộ test suite từ 17 skipped về 0 skipped (143 passed).
+  - Hoàn thành bộ test challenge, đưa toàn bộ test suite từ 17 skipped về 0 skipped (146 passed).
   - Tích hợp thành công việc gửi tin thật lên Private Channel của nhóm qua Telegram Bot API, kèm transcript và ảnh chụp màn hình minh chứng.
   - Triển khai thành công 2 model 3B qua Ollama, đo đạc dữ liệu thực tế và thực hiện phân tích đối sánh đa chiều giữa local và cloud.
 - **Hạn chế đã biết:**

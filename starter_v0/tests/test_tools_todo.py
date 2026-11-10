@@ -79,6 +79,53 @@ def test_send_confirmed_without_env_returns_error_and_no_request(fake_http) -> N
     assert "TELEGRAM_BOT_TOKEN" in result["message"]
 
 
+def test_send_escapes_underscores_inside_words_but_keeps_deliberate_markup(monkeypatch, fake_http) -> None:
+    # Regression: "send_telegram" / "starter_v0" showed up as "sendtelegram" / "starterv0" in the channel.
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "-100123")
+    calls = fake_http(FakeResponse({"ok": True}))
+
+    TOOL_FUNCTIONS["send"](text="Tool send_telegram in starter_v0, *bold* and _italic_", confirmed=True)
+
+    sent = calls[0]["json"]
+    assert sent["text"] == "Tool send\\_telegram in starter\\_v0, *bold* and _italic_"
+    assert sent["parse_mode"] == "Markdown"
+
+
+def test_send_retries_as_plain_text_when_telegram_rejects_markdown(monkeypatch) -> None:
+    import requests
+
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "-100123")
+    responses = [FakeResponse(status_code=400), FakeResponse({"ok": True})]
+    calls: list[dict] = []
+
+    def fake_post(url, **kwargs):
+        calls.append({"url": url, **kwargs})
+        return responses[len(calls) - 1]
+
+    monkeypatch.setattr(requests, "post", fake_post)
+
+    result = TOOL_FUNCTIONS["send"](text="broken *markdown", confirmed=True)
+
+    assert result == {"tool": "send_telegram", "status": "sent"}
+    assert len(calls) == 2
+    assert calls[0]["json"]["parse_mode"] == "Markdown"
+    assert "parse_mode" not in calls[1]["json"]
+    assert calls[1]["json"]["text"] == "broken *markdown"
+
+
+def test_send_http_error_other_than_400_still_returns_error_dict(monkeypatch, fake_http) -> None:
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "-100123")
+    calls = fake_http(FakeResponse(status_code=403))
+
+    result = TOOL_FUNCTIONS["send"](text="hello", confirmed=True)
+
+    assert result["error"] == "HTTPError"
+    assert len(calls) == 1  # no retry for errors that are not formatting problems
+
+
 # ---------------- lookup ----------------
 
 def test_lookup_without_timeframe_omits_time_range(monkeypatch, fake_http) -> None:
