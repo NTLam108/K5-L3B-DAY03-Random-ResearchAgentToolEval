@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Agent · Lab Day 03</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+</head>
+<body>
+  <canvas id="stage" aria-hidden="true"></canvas>
+  <div id="labels" aria-hidden="true"></div>
+
+  <header class="brand">
+    <h1>Research Agent</h1>
+    <p id="meta" class="meta">Đang kết nối…</p>
+    <ul class="legend" aria-label="Chú giải màu của các tool">
+      <li><i class="c-read"></i>Đọc dữ liệu ngoài</li>
+      <li><i class="c-paper"></i>Paper / chính sách</li>
+      <li><i class="c-format"></i>Trình bày</li>
+      <li><i class="c-ask"></i>Hỏi lại người dùng</li>
+      <li><i class="c-send"></i>Hành động gửi</li>
+      <li><i class="c-team"></i>Tool mới của nhóm</li>
+    </ul>
+  </header>
+
+  <main class="panel" aria-label="Trò chuyện với agent">
+    <div id="log" class="log" role="log" aria-live="polite" aria-label="Hội thoại"></div>
+    <div id="suggestions" class="suggestions" aria-label="Câu hỏi mẫu"></div>
+    <form id="form" class="composer" autocomplete="off">
+      <label for="input" class="sr-only">Tin nhắn gửi cho agent</label>
+      <textarea id="input" rows="2" maxlength="2000" placeholder="Hỏi agent… (Enter để gửi, Shift+Enter xuống dòng)" required></textarea>
+      <div class="actions">
+        <button type="button" id="reset" class="ghost">Cuộc trò chuyện mới</button>
+        <button type="submit" id="send">Gửi</button>
+      </div>
+    </form>
+  </main>
+
+  <noscript><p class="noscript">Trang này cần JavaScript để hoạt động.</p></noscript>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>
