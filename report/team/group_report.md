@@ -37,7 +37,7 @@ Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc 
 | Tên tool | Làm được gì | Tool mới nhóm thêm? |
 |---|---|---|
 | clarify | hỏi lại người dùng khi thiếu thông tin | không |
-|  |  |  |
+| cite | tạo trích dẫn APA hoặc BibTeX từ metadata một bài báo (title, authors, published, url); chạy local, không cần API key | có |
 |  |  |  |
 
 ### A3. Câu hỏi mẫu để thử
@@ -163,8 +163,8 @@ Lấy từ `starter_v0/transcripts/*.transcript.json`.
 
 | Item | Evidence File | What Worked | Risk / Guardrail |
 |---|---|---|---|
-| Tool mới (`tools/<tên>/`) |  |  |  |
-| Unit test tool mới (≥ 3 test/tool) | `pytest` output (0 failed) |  |  |
+| Tool mới (`tools/<tên>/`) | `starter_v0/tools/cite/tool.py`, `starter_v0/tools/cite/TOOL.md`, khai báo trong `starter_v0/artifacts/tools.yaml`, đăng ký trong `starter_v0/tools/__init__.py` | Tạo trích dẫn APA/BibTeX từ metadata (khớp field của output `papers`); ghi nguồn và giới hạn trong `TOOL.md` | Tool chỉ nhận metadata, không tự kiểm chứng paper; heuristic "từ cuối là họ" sai với tên ghi họ trước; không in nghiêng, không sentence case; chưa xác nhận `arXiv:ID`/`[Preprint]` với trang APA chính thức |
+| Unit test tool mới (≥ 3 test/tool) | `pytest` output: 80 passed, 17 skipped, 0 failed (`starter_v0/tests/test_tools_todo.py`, 13 test cho `cite`) | Test offline, có assert chuỗi đầy đủ; input xấu trả error dict, không raise | 17 skip là stub của tool có sẵn |
 | UI (lệnh chạy + link dùng thử) |  |  |  |
 
 Tool unit tests: số test đã viết, và một ví dụ lỗi mà unit test bắt được nhưng eval không bắt được.

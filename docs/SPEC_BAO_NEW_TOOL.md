@@ -14,7 +14,57 @@ Thêm ít nhất 1 tool mới vào research agent và chứng minh code tool ch�
 4. `pytest` báo **0 failed**; `pytest tests/test_tool_contract.py` xanh.
 5. Điền bảng B5a trong `report/team/group_report.md` và file báo cáo cá nhân `report/team/2A202603914_TranGiaBao.md`.
 
-## 1. CHƯA CÓ THÔNG TIN — phải hỏi người dùng trước khi code
+## 0.5. QUYẾT ĐỊNH ĐÃ CHỐT: tool mới là `cite`
+
+Người phụ trách nhóm đã ủy quyền chọn; các quyết định dưới đây thay cho câu hỏi #1–#3 ở mục 1. Đây là quyết định thiết kế, **không phải sự thật lấy từ đề bài**.
+
+**Tool:** `cite` — tạo trích dẫn học thuật từ metadata của một bài báo. Ghép với output của tool `papers` (đã đọc `tools/papers/tool.py`: có `title`, `authors` là list, `published`, `url`, `arxiv_id`).
+
+**Lý do chọn (để điểm cao + dễ):** chạy local, không cần API key, không cần mạng nên test offline gọn, không phụ thuộc quota; khác biệt rõ với `format` và các tool tìm kiếm; có luồng tự nhiên "papers -> cite".
+
+**Chữ ký hàm (đề xuất):**
+
+```python
+def cite(title: str = "", authors: list[str] | None = None, published: str = "",
+         url: str = "", style: str = "apa") -> dict[str, Any]
+```
+
+- `style` thuộc `["apa", "bibtex"]`, mặc định `apa`. Giá trị ngoài enum -> error dict (đây chính là test "input xấu").
+- Thành công: `{"tool": "cite", "style": <style>, "citation": "<chuỗi>"}`.
+- Lỗi: `err("cite", exc)` từ `tools/_shared.py`, không raise.
+
+**Quy tắc đầu vào (chốt để test không mơ hồ):**
+- `title` rỗng hoặc chỉ toàn khoảng trắng -> lỗi (`ValueError`, qua `err`).
+- `authors` phải là list; sai kiểu (ví dụ chuỗi) -> lỗi; list rỗng -> lỗi.
+- `published` lấy 4 ký tự đầu làm năm nếu là số; không có năm hợp lệ -> dùng `n.d.` (APA) / bỏ trường `year` (BibTeX). Đây là lựa chọn của nhóm, ghi vào `TOOL.md`.
+- Tên tác giả từ arXiv dạng "Họ Tên" (ví dụ `Ashish Vaswani`): tool đảo thành "Họ, Chữ-cái-đầu." theo heuristic **từ cuối là họ**. Heuristic này sai với một số tên (tên nhiều từ, tên Việt Nam ghi họ trước). **Phải ghi giới hạn này vào `TOOL.md` và báo cáo**, không giấu.
+
+**Quy tắc APA áp dụng (đã đối chiếu với các hướng dẫn thư viện đại học tìm được, ví dụ Purdue OWL, JCU, TU Dublin):**
+- Tác giả: họ trước, theo sau là chữ cái đầu của tên; ngăn cách bằng dấu phẩy; có `&` trước tác giả cuối khi có 2 đến 20 tác giả; liệt kê theo thứ tự nguồn.
+- Chỉ viết hoa chữ đầu tiên của tiêu đề (và danh từ riêng); tool có thể chuẩn hóa chữ đầu, nhưng không bắt buộc xử lý danh từ riêng, ghi giới hạn vào `TOOL.md`.
+- Chưa xác minh được từ nguồn nào: định dạng chính xác của phần "arXiv" và URL cho preprint trong APA 7, quy tắc khi có hơn 20 tác giả. **Bảo cần tra tài liệu chính thức (APA Style) cho hai điểm này trước khi chốt chuỗi mong đợi trong test**, hoặc nhóm tự quyết và ghi rõ trong `TOOL.md` rằng đó là định dạng đơn giản hóa. Để đơn giản và không đoán, nhóm quy ước: > 20 tác giả -> trả lỗi `ValueError` ("too many authors"), không xử lý.
+- Mẫu chuỗi APA (đơn giản hóa, nhóm chấp nhận): `Vaswani, A., Shazeer, N., & Parmar, N. (2017). Attention is all you need. arXiv. https://arxiv.org/abs/1706.03762` — đây là mẫu định dạng, chưa kiểm chứng bằng nguồn APA chính thức cho phần "arXiv. URL".
+
+**BibTeX:** dùng entry `@misc{key, title = {...}, author = {A and B and C}, year = {...}, url = {...}}`, tác giả nối bằng ` and `, key sinh từ họ tác giả đầu + năm (chữ thường, bỏ ký tự không phải chữ/số). Đây là quy ước phổ biến mình biết nhưng **chưa tra lại tài liệu**; Bảo nên đối chiếu một nguồn BibTeX trước khi chốt.
+
+**`track` trong `TOOL.md`:** tạm đặt `bonus` (README: core đủ để qua bài cơ bản, bonus là phần thêm). **Chưa xác nhận với coach** — nếu coach nói khác thì đổi.
+
+**Thời điểm merge:** làm trên branch riêng `feat/cite-tool`; chỉ merge phần sửa `artifacts/tools.yaml` vào `main` **sau khi Lâm chạy xong và push run v0**, để không làm lệch baseline.
+
+**Bộ test chốt (≥ 3 bắt buộc, khuyến nghị 7 để chắc điểm, tất cả offline, không cần `fake_http`):**
+1. `test_cite_apa_three_authors_formats_names_and_ampersand` — happy path, assert chuỗi đầy đủ.
+2. `test_cite_apa_single_author_has_no_ampersand`
+3. `test_cite_bibtex_builds_key_and_joins_authors_with_and`
+4. `test_cite_empty_title_returns_error_dict`
+5. `test_cite_authors_wrong_type_returns_error_dict_not_raise`
+6. `test_cite_unknown_style_returns_error_dict`
+7. `test_cite_missing_year_uses_nd_in_apa`
+
+**Eval case route tới `cite` (gợi ý cho Hiếu):** câu hỏi người dùng kèm metadata của paper và yêu cầu citation APA. Lưu ý: model phải truyền `title`, `authors`, `published` vào args; nếu case khó thì vẫn hợp lệ, miễn kết quả được phân tích trung thực.
+
+**Mô tả `tools.yaml` đề xuất (nói khi nào dùng/không dùng):** "Tạo trích dẫn APA hoặc BibTeX từ metadata một bài báo đã biết (title, authors, published, url). Dùng khi người dùng xin citation/tham khảo của một paper cụ thể. KHÔNG dùng để tìm paper (dùng papers) và không dùng để trình bày bản tin (dùng format)."
+
+## 1. Các câu hỏi còn lại (câu #1–#3 đã được chốt ở mục 0.5)
 
 | # | Câu hỏi | Vì sao cần |
 |---|---|---|
