@@ -28,7 +28,7 @@
 - **Bộ Unit Test cho Web Server (`starter_v0/tests/test_web_server.py`):**
   - Viết 17 bài test tự động chạy offline, kiểm thử toàn diện các luồng: phục vụ static file, xử lý phiên chat hợp lệ, kiểm tra rate limit, che giấu key nhạy cảm, xử lý tool lỗi.
 - **Thực nghiệm Chat Live & Báo cáo:**
-  - Chạy live session với OpenRouter (`gpt-4o-mini`), ghi lại transcript tương tác nhiều lượt: `v3_web_openrouter_20261111T003816480838.transcript.json` và phiên thử nghiệm tool mới `cite` qua UI `v3-cite_web_openrouter_20261111T005023452246.transcript.json`.
+  - Chạy live session với OpenRouter (`gpt-4o-mini`), ghi lại transcript tương tác nhiều lượt: `v3-cite_web_openrouter_20261111T005009308788.transcript.json` (thiếu thông tin rồi bổ sung), `v3-cite_web_openrouter_20261111T005020368434.transcript.json` (yêu cầu đăng Telegram rồi hủy) và phiên thử nghiệm tool mới `cite` qua UI `v3-cite_web_openrouter_20261111T005023452246.transcript.json`.
   - Hoàn thiện Phần A (Giới thiệu agent, hướng dẫn chạy UI, danh sách tool, câu hỏi mẫu) và các mục B4, B5a trong `report/team/group_report.md`.
 
 ## 4. Bằng chứng
@@ -41,7 +41,8 @@
   - `starter_v0/web_server.py`, `starter_v0/web/app.js`, `starter_v0/web/index.html`, `starter_v0/web/style.css`, `starter_v0/web/assets/CREDITS.md`.
   - `starter_v0/tests/test_web_server.py` (17 unit tests offline, 100% pass).
 - **Transcript thực tế:**
-  - `starter_v0/transcripts/v3_web_openrouter_20261111T003816480838.transcript.json`
+  - `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005009308788.transcript.json`
+  - `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005020368434.transcript.json`
   - `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005023452246.transcript.json`
 - **Tài liệu báo cáo:** Phần A, B4, B5a trong `report/team/group_report.md`.
 

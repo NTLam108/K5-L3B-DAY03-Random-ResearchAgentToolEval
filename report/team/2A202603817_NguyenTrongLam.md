@@ -30,9 +30,9 @@
   - `7e9089b` CP2 v2: clarify routing boundaries in tools.yaml
   - `70b5c7a` CP2 v3: add send confirmation boundary to clarify/send
 - **File run kết quả:**
-  - `starter_v0/runs/v0_B_base_openrouter_20261110T175735749717.json` (13/20 - 65%)
-  - `starter_v0/runs/v1_B_base_openrouter_20261110T181958269786.json` (16/20 - 80%)
-  - `starter_v0/runs/v2_B_base_openrouter_20261110T183359733221.json` (19/20 - 95%)
+  - `starter_v0/runs/v0_B_base_openrouter_20261110T175342743576.json` (13/20 - 65%)
+  - `starter_v0/runs/v1_B_base_openrouter_20261110T181321621691.json` (16/20 - 80%)
+  - `starter_v0/runs/v2_B_base_openrouter_20261110T183311636102.json` (19/20 - 95%)
   - `starter_v0/runs/v3_B_base_openrouter_20261110T183608163642.json` (19/20 - 95%)
 - **Tài liệu báo cáo:**
   - Mục B1, B2, B6 trong `report/team/group_report.md`.
