@@ -50,7 +50,7 @@ Mỗi thành viên nộp một báo cáo cá nhân trong `report/team/`:
 ### Bằng chứng
 
 - File: `starter_v0/artifacts/system_prompt.md`, `starter_v0/artifacts/tools.yaml`, `starter_v0/artifacts/version_log.csv`.
-- Runs: `runs/v0_B_base_openrouter_20261110T175735749717.json`, `runs/v1_B_base_openrouter_20261110T181958269786.json`, `runs/v2_B_base_openrouter_20261110T183359733221.json`, `runs/v3_B_base_openrouter_20261110T183608163642.json`.
+- Runs: `runs/v0_B_base_openrouter_20261110T175342743576.json`, `runs/v1_B_base_openrouter_20261110T181321621691.json`, `runs/v2_B_base_openrouter_20261110T183311636102.json`, `runs/v3_B_base_openrouter_20261110T183608163642.json`.
 - Commit (NTLam108 <lam.nt108204@gmail.com>): `d4de72b`, `f7128f7`, `7e9089b`, `70b5c7a`.
 
 ---
@@ -127,6 +127,6 @@ Mỗi thành viên nộp một báo cáo cá nhân trong `report/team/`:
 ### Bằng chứng
 
 - File: `starter_v0/web_server.py`, `starter_v0/web/`, `starter_v0/tests/test_web_server.py` (17 tests passed).
-- Transcripts: `starter_v0/transcripts/v3_web_openrouter_20261111T003816480838.transcript.json`, `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005023452246.transcript.json`.
+- Transcripts: `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005009308788.transcript.json`, `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005020368434.transcript.json`, `starter_v0/transcripts/v3-cite_web_openrouter_20261111T005023452246.transcript.json`.
 - Báo cáo: Phần A và mục B4, B5a trong `report/team/group_report.md`.
 - Commit (TrnhThnh <hungthinh05112002@gmail.com>): `f2b1e3e`, `bd76ec0`, `b9748a8`.
