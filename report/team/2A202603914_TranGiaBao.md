@@ -90,4 +90,3 @@
 - **Hạn chế đã biết:**
   - *Bộ test extension:* Việc thêm các case E11-E13 vào `starter_v0/data/eval_research_extension.json` dù không sửa nội dung các case có sẵn (E01-E10) nhưng vẫn thuộc diện chỉnh sửa file extension, cần hỏi ý kiến coach để xác nhận tính hợp lệ theo quy định `RULES.md`.
   - *Prompt local trên cloud:* Bản prompt rút gọn cho model nhỏ khi chạy ngược trên cloud làm tụt điểm (từ 0.95 xuống 0.90, multi-turn tụt còn 0.67) do các luật ngắn làm mất khả năng giữ ngữ cảnh đa lượt của GPT-4o-mini.
-  - *Chưa có link deploy public:* Giao diện Web UI hiện chỉ chạy nội bộ trên máy (`127.0.0.1:8000`).
