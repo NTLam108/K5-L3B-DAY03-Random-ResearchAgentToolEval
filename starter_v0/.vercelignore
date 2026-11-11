@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+.venv
+runs
+transcripts
+tests
+arxiv_papers
+__pycache__
