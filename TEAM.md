@@ -13,7 +13,7 @@
 
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
-|   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 | 26ai.lamnt2@vinuni.edu.vn | NTLam108 | Quản lý repo, setup, baseline v0 + phân tích lỗi, 3 vòng tối ưu v1/v2/v3 |
+|   1 | Nguyễn Trọng Lâm (nhóm trưởng) | 2A202603817 | 26ai.lamnt6@vinuni.edu.vn | NTLam108 | Quản lý repo, setup, baseline v0 + phân tích lỗi, 3 vòng tối ưu v1/v2/v3 |
 |   2 | Trần Gia Bảo | 2A202603914 | 26ai.baotg@vinuni.edu.vn | Jay-Gabriel | Tool mới (`cite`, `calc`, `text_stats`, `table_format`), 4 Bonus challenges, test suite |
 |   3 | Vũ Xuân Hiếu | 2A202603860 | 26ai.hieuvx2@vinuni.edu.vn | vuhieuvh | 10 case eval nhóm, benchmark `--suite group`, phân tích lỗi |
 |   4 | Trịnh Hưng Thịnh | 2A202603907 | 26ai.thinhth@vinuni.edu.vn | TrnhThnh | Web UI 3D (Three.js), web server backend, chat live + transcripts, báo cáo Phần A |
