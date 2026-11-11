@@ -4,7 +4,7 @@
 
 - Họ tên: Nguyễn Trọng Lâm (nhóm trưởng)
 - MSSV: 2A202603817
-- Email: 26ai.lamnt2@vinuni.edu.vn (GitHub: NTLam108, commit: lam.nt108204@gmail.com)
+- Email: 26ai.lamnt6@vinuni.edu.vn (GitHub: NTLam108, commit: lam.nt108204@gmail.com)
 
 ## 2. Phần việc phụ trách
 
