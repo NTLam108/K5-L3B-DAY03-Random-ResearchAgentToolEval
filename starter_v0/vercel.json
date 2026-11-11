@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60,
+      "includeFiles": "{*.py,web/**,artifacts/**,company_policy/**,tools/**,providers/**}"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index?__path=/$1" }]
+}
